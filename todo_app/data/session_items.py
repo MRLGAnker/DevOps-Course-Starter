@@ -77,7 +77,7 @@ def remove_item(item):
         item: The item to save.
     """
     existing_items = get_items()
-    updated_items = [i for i in existing_items if not (i['id'] == item['id'])] 
+    updated_items = [i for i in existing_items if (i['id'] != item['id'])] 
 
     session['items'] = updated_items
 
