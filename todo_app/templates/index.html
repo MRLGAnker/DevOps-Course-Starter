@@ -7,60 +7,57 @@
     <p class="lead">Just another to-do app.</p>
   </div>
   <div class="my-3 p-3 bg-white rounded shadow-sm">
-    <h3 class="border-bottom border-gray pb-2 mb-0">Not Started</h3>
-    {% for item in items %}
-      {% if item.status == "Not Started" %}
-        <div class="media text-muted pt-3">
-          <!--.<svg class="bd-placeholder-img mr-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: 32x32"><title>Placeholder</title><rect width="100%" height="100%" fill="#007bff"></rect><text x="50%" y="50%" fill="#007bff" dy=".3em">32x32</text></svg>-->
-          <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
-            <div class="d-flex justify-content-between align-items-center w-100">
-              <strong class="text-gray-dark">{{item.title}}</strong>
-              <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
-                <a type="button" href="/complete/{{item.id}}" class="btn btn-secondary">Complete</a>
-                <a type="button" href="/remove/{{item.id}}" class="btn btn-secondary">Remove</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      {% endif %}
-    {% endfor %}
-  </div>
-  <div class="my-3 p-3 bg-white rounded shadow-sm">
     <h3 class="border-bottom border-gray pb-2 mb-0">Add Item</h3>
     <form action="/" method="post">
-      <div class="input-group mb-3">
-        <input type="text" class="form-control" aria-describedby="button-addon2" id="addItem" name="addItem">
+      <div class="input-group">
+        <input type="text" class="form-control" name="card_name">
         <div class="input-group-append">
-          <button class="btn btn-secondary" type="submit" value="Submit" id="button-addon2">Add</button>
+          <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Add to</button>
+          <div class="dropdown-menu">
+            {% for move_list in lists %}
+            <button class="dropdown-item" name="submit_button" value="{{move_list['id']}}" type="submit">{{move_list['name']}}</button>
+            {% endfor %}
+          </div>
         </div>
       </div>
     </form>
   </div>
-  <div class="my-3 p-3 bg-white rounded shadow-sm">
-    <h3 class="border-bottom border-gray pb-2 mb-0">Completed</h3>
-    {% for item in items %}
-      {% if item.status == "Completed" %}
-        <div class="media text-muted pt-3">
-          <!--.<svg class="bd-placeholder-img mr-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: 32x32"><title>Placeholder</title><rect width="100%" height="100%" fill="#007bff"></rect><text x="50%" y="50%" fill="#007bff" dy=".3em">32x32</text></svg>-->
-          <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
-            <div class="d-flex justify-content-between align-items-center w-100">
-              <strong class="text-gray-dark">{{item.title}}</strong>
-              <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
-                <a type="button" href="/complete/{{item.id}}" class="btn btn-secondary disabled">Complete</a>
-                <a type="button" href="/remove/{{item.id}}" class="btn btn-secondary">Remove</a>
+  {% for list in lists %}
+    <div class="my-3 p-3 bg-white rounded shadow-sm">
+      <h3 class="border-bottom border-gray pb-2 mb-0">{{list['name']}}</h3>
+        {% for card in cards %}
+          {% if list['id'] == card['idList'] %}
+            <div class="media text-muted pt-3">
+              <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                  <h6 class="text-gray-dark">{{card['name']}}</h6>
+                    <div class="dropdown">
+                      <button class="btn btn-secondary btn-sm" type="button" data-toggle="collapse" data-target="#collapse{{card['id']}}" aria-expanded="false" aria-controls="collapseExample">
+                        Expand
+                      </button>
+                      <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Actions
+                      </button>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        {% for move_list in lists %}
+                          {% if move_list['id'] != card['idList'] %}
+                            <a class="dropdown-item" href="/move/{{card['id']}}/{{move_list['id']}}">Move to: {{move_list['name']}}</a>
+                          {% endif %}
+                        {% endfor %}
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="/remove/{{card['id']}}">Remove</a>
+                      </div>
+                    </div>
+                </div>
+                <div class="collapse" id="collapse{{card['id']}}">
+                  <small><b>Description:</b> {{card['desc']}}</small>
+                  <br>
+                  <small><b>Due:</b> {{card['due']}}</small>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      {% endif %}
-    {% endfor %}
-  </div>
-  <!--<div>
-    <form action="/" method="post">
-      <h2>Add Item</h2>
-      <input type="text" id="addItem" name="addItem">
-      <input type="submit" value="Submit">
-    </form>
-  </div>
--->
+          {% endif %}
+        {% endfor %}
+    </div>
+  {% endfor %}
 {% endblock %}
