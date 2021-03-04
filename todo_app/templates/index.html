@@ -3,7 +3,7 @@
 
 {% block content %}
   <div class="jumbotron">
-    <h1 class="display-4">To-Do App</h1>
+    <h2 class="display-4">To-Do App</h2>
     <p class="lead">Just another to-do app.</p>
   </div>
   <div class="my-3 p-3 bg-white rounded shadow-sm">
@@ -14,7 +14,7 @@
         <div class="input-group-append">
           <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Add to</button>
           <div class="dropdown-menu">
-            {% for move_list in lists %}
+            {% for move_list in view_model.lists %}
             <button class="dropdown-item" name="submit_button" value="{{move_list['id']}}" type="submit">{{move_list['name']}}</button>
             {% endfor %}
           </div>
@@ -22,10 +22,10 @@
       </div>
     </form>
   </div>
-  {% for list in lists %}
+  {% for list in view_model.lists %}
     <div class="my-3 p-3 bg-white rounded shadow-sm">
       <h3 class="border-bottom border-gray pb-2 mb-0">{{list['name']}}</h3>
-        {% for card in cards %}
+        {% for card in view_model.cards %}
           {% if list['id'] == card['idList'] %}
             <div class="media text-muted pt-3">
               <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
@@ -39,7 +39,7 @@
                         Actions
                       </button>
                       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_{{card['id']}}">
-                        {% for move_list in lists %}
+                        {% for move_list in view_model.lists %}
                           {% if move_list['id'] != card['idList'] %}
                             <a class="dropdown-item" href="/move/{{card['id']}}/{{move_list['id']}}">Move to: {{move_list['name']}}</a>
                           {% endif %}
@@ -51,8 +51,10 @@
                 </div>
                 <div class="collapse" id="collapse{{card['id']}}">
                   <small><b>Description:</b> {{card['desc']}}</small>
-                  <br>
-                  <small><b>Due:</b> {{card['due']}}</small>
+                  {% if card['due'] %}
+                    <br>
+                    <small><b>Due:</b> {{card['due'].strftime('%d/%m/%Y')}}
+                  {% endif %}
                 </div>
               </div>
             </div>

@@ -1,7 +1,6 @@
 from pprint import pprint
 from flask import Flask, render_template, request, redirect
-import requests
-from todo_app.data.session_items import create_card, get_lists, get_cards, move_card, remove_card
+from todo_app.data.session_items import create_card, get_lists, get_cards, move_card, remove_card, ViewModel
 
 from todo_app.flask_config import Config
 
@@ -11,7 +10,8 @@ app.config.from_object(Config)
 
 @app.route('/')
 def index():
-    return render_template('index.html', lists=get_lists(),cards=get_cards())
+    item_view_model = ViewModel(get_lists(),get_cards())
+    return render_template('index.html', view_model=item_view_model)
 
 
 @app.route('/',methods=['POST'])

@@ -97,3 +97,16 @@ def remove_card(card_id):
     response_json = post.json()
 
     return response_json
+
+class ViewModel:
+    def __init__(self, lists, cards):
+        self._lists = lists
+        self._cards = cards
+    
+    @property
+    def lists(self):
+        return self._lists
+    
+    @property
+    def cards(self):
+        return self._cards
