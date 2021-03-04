@@ -1,8 +1,7 @@
 from logging import Formatter
 import os
 import requests
-import arrow
-from pprint import pp, pprint
+from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -18,10 +17,19 @@ class Card:
         self.name = name
         self.idList = idList
         self.desc = desc
-        if due:
-            self.due = arrow.get(due).datetime.strftime('%d %B %Y')
-        else:
-            self.due = ''
+        try:
+            self.due = self.due = datetime.strptime(due,'%Y-%m-%dT%H:%M:%S.%fZ')
+        except:
+            self.due = None
+
+def get_auth_params():
+    """
+    Returns authentication parameters.
+
+    Returns:
+        Authentication parameters in JSON format.
+    """
+    return {'key': os.environ.get('SECRET_KEY'),'token': os.environ.get('SECRET_TOKEN')}
 
 def get_lists():
     """
@@ -32,7 +40,7 @@ def get_lists():
     """
     lists = []
 
-    for list in (requests.get("https://api.trello.com/1/boards/{}/lists?key={}&token={}".format(os.environ.get('BOARD_ID'),os.environ.get('SECRET_KEY'),os.environ.get('SECRET_TOKEN')))).json():
+    for list in (requests.get(f"https://api.trello.com/1/boards/{os.environ.get('BOARD_ID')}/lists",params=get_auth_params())).json():
         lists.append(List(list['id'],list['name']))
 
     return lists
@@ -46,7 +54,7 @@ def get_cards():
     """
     cards = []
 
-    for card in (requests.get("https://api.trello.com/1/boards/{}/cards?key={}&token={}".format(os.environ.get('BOARD_ID'),os.environ.get('SECRET_KEY'),os.environ.get('SECRET_TOKEN')))).json():
+    for card in (requests.get(f"https://api.trello.com/1/boards/{os.environ.get('BOARD_ID')}/cards",params=get_auth_params())).json():
         cards.append(Card(card['id'],card['name'],card['idList'],card['desc'],card['due']))
 
     return cards
@@ -58,7 +66,7 @@ def create_card(name,list_id):
     Returns:
         JSON response.
     """
-    post = requests.post("https://api.trello.com/1/cards?key={}&token={}&name={}&idList={}".format(os.environ.get('SECRET_KEY'),os.environ.get('SECRET_TOKEN'),name,list_id))
+    post = requests.post(f"https://api.trello.com/1/cards?name={name}&idList={list_id}",params=get_auth_params())
     
     response_json = post.json()
 
@@ -71,10 +79,9 @@ def move_card(card_id,list_id):
     Returns:
         JSON response.
     """
+    put = requests.put(f"https://api.trello.com/1/cards/{card_id}?idList={list_id}",params=get_auth_params())
     
-    post = requests.put("https://api.trello.com/1/cards/{}?key={}&token={}&idList={}".format(card_id,os.environ.get('SECRET_KEY'),os.environ.get('SECRET_TOKEN'),list_id))
-    
-    response_json = post.json()
+    response_json = put.json()
 
     return response_json
 
@@ -85,8 +92,7 @@ def remove_card(card_id):
     Returns:
         JSON response.
     """
-    
-    post = requests.delete("https://api.trello.com/1/cards/{}?key={}&token={}".format(card_id,os.environ.get('SECRET_KEY'),os.environ.get('SECRET_TOKEN')))
+    post = requests.delete(f"https://api.trello.com/1/cards/{card_id}",params=get_auth_params())
     
     response_json = post.json()
 

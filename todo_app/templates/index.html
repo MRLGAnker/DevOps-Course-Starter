@@ -35,10 +35,10 @@
                       <button class="btn btn-secondary btn-sm" type="button" data-toggle="collapse" data-target="#collapse{{card['id']}}" aria-expanded="false" aria-controls="collapseExample">
                         Expand
                       </button>
-                      <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton_{{card['id']}}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Actions
                       </button>
-                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_{{card['id']}}">
                         {% for move_list in lists %}
                           {% if move_list['id'] != card['idList'] %}
                             <a class="dropdown-item" href="/move/{{card['id']}}/{{move_list['id']}}">Move to: {{move_list['name']}}</a>
