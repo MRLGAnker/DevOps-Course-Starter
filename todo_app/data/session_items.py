@@ -1,84 +1,99 @@
-from flask import session
+from logging import Formatter
+import os
+import requests
+from datetime import datetime
+from dotenv import load_dotenv
 
-_DEFAULT_ITEMS = [
-    { 'id': 1, 'status': 'Not Started', 'title': 'List saved todo items' },
-    { 'id': 2, 'status': 'Not Started', 'title': 'Allow new items to be added' }
-]
+load_dotenv()
 
+class List:  
+    def __init__(self, id, name):  
+        self.id = id  
+        self.name = name
 
-def get_items():
+class Card:  
+    def __init__(self, id, name, idList, desc, due):  
+        self.id = id  
+        self.name = name
+        self.idList = idList
+        self.desc = desc
+        try:
+            self.due = self.due = datetime.strptime(due,'%Y-%m-%dT%H:%M:%S.%fZ')
+        except:
+            self.due = None
+
+def get_auth_params():
     """
-    Fetches all saved items from the session.
+    Returns authentication parameters.
 
     Returns:
-        list: The list of saved items.
+        Authentication parameters in JSON format.
     """
-    return session.get('items', _DEFAULT_ITEMS)
+    return {'key': os.environ.get('SECRET_KEY'),'token': os.environ.get('SECRET_TOKEN')}
 
-
-def get_item(id):
+def get_lists():
     """
-    Fetches the saved item with the specified ID.
-
-    Args:
-        id: The ID of the item.
+    Fetches all Lists from the given Trello Board.
 
     Returns:
-        item: The saved item, or None if no items match the specified ID.
+        JSON response.
     """
-    items = get_items()
-    return next((item for item in items if item['id'] == int(id)), None)
+    lists = []
 
+    for list in (requests.get(f"https://api.trello.com/1/boards/{os.environ.get('BOARD_ID')}/lists",params=get_auth_params())).json():
+        lists.append(List(list['id'],list['name']))
 
-def add_item(title):
+    return lists
+
+def get_cards():
     """
-    Adds a new item with the specified title to the session.
-
-    Args:
-        title: The title of the item.
+    Fetches all Cards from the given Trello Board.
 
     Returns:
-        item: The saved item.
+        JSON response.
     """
-    items = get_items()
+    cards = []
 
-    # Determine the ID for the item based on that of the previously added item
-    id = items[-1]['id'] + 1 if items else 0
+    for card in (requests.get(f"https://api.trello.com/1/boards/{os.environ.get('BOARD_ID')}/cards",params=get_auth_params())).json():
+        cards.append(Card(card['id'],card['name'],card['idList'],card['desc'],card['due']))
 
-    item = { 'id': id, 'title': title, 'status': 'Not Started' }
+    return cards
 
-    # Add the item to the list
-    items.append(item)
-    session['items'] = items
-
-    return item
-
-
-def save_item(item):
+def create_card(name,list_id):
     """
-    Updates an existing item in the session. If no existing item matches the ID of the specified item, nothing is saved.
+    Creates a card with the given name and Trello List.
 
-    Args:
-        item: The item to save.
+    Returns:
+        JSON response.
     """
-    existing_items = get_items()
-    updated_items = [item if item['id'] == existing_item['id'] else existing_item for existing_item in existing_items]
+    post = requests.post(f"https://api.trello.com/1/cards?name={name}&idList={list_id}",params=get_auth_params())
+    
+    response_json = post.json()
 
-    session['items'] = updated_items
+    return response_json
 
-    return item
-
-
-def remove_item(item):
+def move_card(card_id,list_id):
     """
-    Updates an existing item in the session. If no existing item matches the ID of the specified item, nothing is saved.
+    Moves an item to the given Trello List.
 
-    Args:
-        item: The item to save.
+    Returns:
+        JSON response.
     """
-    existing_items = get_items()
-    updated_items = [i for i in existing_items if (i['id'] != item['id'])] 
+    put = requests.put(f"https://api.trello.com/1/cards/{card_id}?idList={list_id}",params=get_auth_params())
+    
+    response_json = put.json()
 
-    session['items'] = updated_items
+    return response_json
 
-    return item
+def remove_card(card_id):
+    """
+    Moves an item to the given Trello List.
+
+    Returns:
+        JSON response.
+    """
+    post = requests.delete(f"https://api.trello.com/1/cards/{card_id}",params=get_auth_params())
+    
+    response_json = post.json()
+
+    return response_json
