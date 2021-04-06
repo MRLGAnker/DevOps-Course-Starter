@@ -25,8 +25,7 @@
   {% for list in view_model.lists %}
     <div class="my-3 p-3 bg-white rounded shadow-sm">
       <h3 class="border-bottom border-gray pb-2 mb-0">{{list['name']}}</h3>
-        {% for card in view_model.cards %}
-          {% if list['id'] == card['idList'] %}
+        {% for card in list.cards %}
             <div class="media text-muted pt-3">
               <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
                 <div class="d-flex justify-content-between align-items-center w-100">
@@ -58,7 +57,6 @@
                 </div>
               </div>
             </div>
-          {% endif %}
         {% endfor %}
     </div>
   {% endfor %}
