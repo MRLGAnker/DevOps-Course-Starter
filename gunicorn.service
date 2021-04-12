@@ -1,0 +1,15 @@
+[Unit]
+Description=gunicorn daemon
+After=network.target
+
+[Service]
+Type=notify
+# the specific user that our service will run as
+User=vagrant
+WorkingDirectory=/vagrant
+ExecStart=VENV_PATH/bin/gunicorn --error-logfile /vagrant/gunicorn_error.log --access-logfile /vagrant/gunicorn_access.log --bind 0.0.0.0:5000 "todo_app.app:create_app()"
+ExecReload=/bin/kill -s HUP $MAINPID
+EnvironmentFile=/vagrant/.env
+
+[Install]
+WantedBy=multi-user.target
