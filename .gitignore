@@ -121,3 +121,6 @@ env/
 
 .vagrant
 .vagrant/
+
+.vscode
+.vscode/
