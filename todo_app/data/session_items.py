@@ -11,7 +11,6 @@ class List:
     def __init__(self, id, name):  
         self.id = id  
         self.name = name
-        self.cards = get_cards_from_list(id)
         
 class Card:  
     def __init__(self, id, name, idList, desc, due, dateLastActivity):  
@@ -26,12 +25,50 @@ class Card:
         self.dateLastActivity = datetime.strptime(dateLastActivity,'%Y-%m-%dT%H:%M:%S.%fZ')
 
 class ViewModel:
-    def __init__(self, lists):
+    def __init__(self, items, lists):
+        self._items = items
         self._lists = lists
+
+    @property
+    def items(self):
+        return self._items
     
     @property
     def lists(self):
         return self._lists
+    
+    @property
+    def to_do_items(self):
+        list_id = search_list(self._lists,'To Do')
+        return [item for item in self._items if item.idList == list_id]
+    
+    @property
+    def doing_items(self):
+        list_id = search_list(self._lists,'Doing')
+        return [item for item in self._items if item.idList == list_id]
+    
+    @property
+    def done_items(self):
+        list_id = search_list(self._lists,'Done')
+        return [item for item in self._items if item.idList == list_id]
+
+    @property
+    def show_all_done_items(self):
+        if len(self.done_items) < 5:
+            return True
+        else:
+            return False
+
+    @property
+    def recent_done_items(self):
+        list_id = search_list(self._lists,'Done')
+        done_items = [item for item in self._items if item.idList == search_list(self._lists,'Done')]
+        return [item for item in done_items if item.dateLastActivity.date() == datetime.utcnow().date()]
+
+    @property
+    def older_done_items(self):
+        done_items = [item for item in self._items if item.idList == search_list(self._lists,'Done')]
+        return [item for item in done_items if item.dateLastActivity.date() < datetime.utcnow().date()]
 
 def get_auth_params():
     """
@@ -41,6 +78,18 @@ def get_auth_params():
         Authentication parameters in JSON format.
     """
     return {'key': os.environ.get('SECRET_KEY'),'token': os.environ.get('SECRET_TOKEN')}
+
+def search_list(list,name):
+    """
+    Searches the given array of lists for the list with the given name.
+    (Assumes there is only 1 match, which should be OK for this exercise)
+
+    Returns:
+        List ID of the list with matching name.
+    """
+    for item in list:
+        if item.name == name:
+            return item.id
 
 def get_lists():
     """
@@ -56,46 +105,6 @@ def get_lists():
 
     return lists
 
-#Not sure if needed
-def search_list(list, search_string):
-    """
-    Searches the given list for a list item with a 'name' equal to search_string.
-
-    Returns:
-        JSON response.
-    """
-    for item in list:
-        if item.name.find(search_string) != -1:
-            return item.id
-
-def show_all_done_items(cards_list):
-    if len(cards_list) < 5:
-        return True
-    else:
-        return False
-
-def recent_done_items(cards_list):
-    recent_cards = []
-    today = datetime.today().date()
-    
-    for card in cards_list:
-        if card.dateLastActivity.date() == today:
-            recent_cards.append(card)
-
-    return recent_cards
-
-
-def older_done_items(cards_list):
-    older_cards = []
-    today = datetime.today().date()
-    
-    for card in cards_list:
-        if card.dateLastActivity.date() != today:
-            older_cards.append(card)
-
-    return older_cards
-
-#To be removed? Superceeded by get_cards_from_list
 def get_cards():
     """
     Fetches all Cards from the given Trello Board.
@@ -104,22 +113,9 @@ def get_cards():
         JSON response.
     """
     cards = []
+    today = datetime.today().date()
 
     for card in (requests.get(f"https://api.trello.com/1/boards/{os.environ.get('BOARD_ID')}/cards",params=get_auth_params())).json():
-        cards.append(Card(card['id'],card['name'],card['idList'],card['desc'],card['due'],card['dateLastActivity']))
-
-    return cards
-
-def get_cards_from_list(list_id):
-    """
-    Fetches all Cards from the given List.
-
-    Returns:
-        JSON response.
-    """
-    cards = []
-
-    for card in (requests.get(f"https://api.trello.com/1/lists/{list_id}/cards",params=get_auth_params())).json():
         cards.append(Card(card['id'],card['name'],card['idList'],card['desc'],card['due'],card['dateLastActivity']))
 
     return cards
@@ -160,5 +156,32 @@ def remove_card(card_id):
     post = requests.delete(f"https://api.trello.com/1/cards/{card_id}",params=get_auth_params())
     
     response_json = post.json()
+
+    return response_json
+
+
+def create_board(name):
+    """
+    Creates a Trello Board.
+
+    Returns:
+        JSON response.
+    """
+    post = requests.post(f"https://api.trello.com/1/boards/?name={name}",params=get_auth_params())
+    
+    response_json = post.json()
+
+    return response_json
+
+def delete_board(board_id):
+    """
+    Deletes a Trello Board.
+
+    Returns:
+        JSON response.
+    """
+    put = requests.delete(f"https://api.trello.com/1/boards/{board_id}",params=get_auth_params())
+    
+    response_json = put.json()
 
     return response_json
