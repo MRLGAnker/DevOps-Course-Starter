@@ -1,6 +1,5 @@
 import pytest
 import os
-import selenium
 from threading import Thread
 from selenium.common.exceptions import NoSuchElementException
 from todo_app import app
@@ -56,15 +55,11 @@ def test_task_journey(driver,app_with_temp_board):
 	driver.find_element_by_xpath("//*[starts-with(@id,'dropdownMenuButton')]").click()
 	driver.find_element_by_xpath("//a[contains(text(),'Remove')]").click()
 	
-	try:
+	with pytest.raises(NoSuchElementException):
 		driver.find_element_by_xpath("//*[starts-with(@id,'to_do_item_')]")
-	except NoSuchElementException:
-		assert True
-	try:
-		assert driver.find_element_by_xpath("//*[starts-with(@id,'doing_item_')]")
-	except NoSuchElementException:
-		assert True
-	try:
-		assert driver.find_element_by_xpath("//*[starts-with(@id,'done_item_')]")
-	except NoSuchElementException:
-		assert True
+
+	with pytest.raises(NoSuchElementException):
+		driver.find_element_by_xpath("//*[starts-with(@id,'doing_item_')]")
+
+	with pytest.raises(NoSuchElementException):
+		driver.find_element_by_xpath("//*[starts-with(@id,'done_item_')]")

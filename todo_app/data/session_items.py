@@ -54,14 +54,10 @@ class ViewModel:
 
     @property
     def show_all_done_items(self):
-        if len(self.done_items) < 5:
-            return True
-        else:
-            return False
+        return len(self.done_items) < 5
 
     @property
     def recent_done_items(self):
-        list_id = search_list(self._lists,'Done')
         done_items = [item for item in self._items if item.idList == search_list(self._lists,'Done')]
         return [item for item in done_items if item.dateLastActivity.date() == datetime.utcnow().date()]
 
@@ -113,7 +109,6 @@ def get_cards():
         JSON response.
     """
     cards = []
-    today = datetime.today().date()
 
     for card in (requests.get(f"https://api.trello.com/1/boards/{os.environ.get('BOARD_ID')}/cards",params=get_auth_params())).json():
         cards.append(Card(card['id'],card['name'],card['idList'],card['desc'],card['due'],card['dateLastActivity']))

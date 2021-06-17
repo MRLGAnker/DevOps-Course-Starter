@@ -56,3 +56,9 @@ You should see output similar to the following:
  * Debugger PIN: 226-556-590
 ```
 Now visit [`http://localhost:5000/`](http://localhost:5000/) in your web browser to view the app.
+
+### Running the Tests
+
+To run the tests requires pytest to be installed, if you have run through the Dependencies step it should have been installed when you ran 'poetry install'.
+
+You can then run: "poetry run pytest" to execute all the currently defined tests. 

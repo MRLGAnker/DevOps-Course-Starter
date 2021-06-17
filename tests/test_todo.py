@@ -12,15 +12,19 @@ def client():
     with test_app.test_client() as client:
         yield client
 
-class Test_Index_Page:
+@patch('requests.get')
+def test_index_page(mock_get_requests, client):
+    file_path = find_dotenv('.env.test')
+    load_dotenv(file_path, override=True)
+    mock_get_requests.side_effect = mock_request
+    response = client.get('/')
 
-    @patch('requests.get')
-    def test_index_page(mock_get_requests, client):
-        mock_get_requests.side_effect = mock_request
-        response = client.get('/')
+    assert response.status_code == 200
+    assert b'To Do Item' in response.data
+    assert b'Doing Item' in response.data
+    assert b'Test Done Item' in response.data
 	 
 def mock_request(url,params):
-    trello_board_id = os.getenv('TRELLO_BOARD_ID')
     if url.startswith(f"https://api.trello.com/1/boards/{os.environ.get('BOARD_ID')}/lists"):
         response = Mock()
 
@@ -40,6 +44,7 @@ def mock_request(url,params):
         ]
         response.json.return_value = json_return
         return response
+    
     elif url.startswith(f"https://api.trello.com/1/boards/{os.environ.get('BOARD_ID')}/cards"):
         response = Mock()
 
