@@ -1,18 +1,19 @@
 from logging import Formatter
 import os
 import requests
-from datetime import datetime
+from datetime import date, datetime
 from dotenv import load_dotenv
 
 load_dotenv()
 
-class List:  
+class List:
+    
     def __init__(self, id, name):  
         self.id = id  
         self.name = name
-
+        
 class Card:  
-    def __init__(self, id, name, idList, desc, due):  
+    def __init__(self, id, name, idList, desc, due, dateLastActivity):  
         self.id = id  
         self.name = name
         self.idList = idList
@@ -21,6 +22,49 @@ class Card:
             self.due = self.due = datetime.strptime(due,'%Y-%m-%dT%H:%M:%S.%fZ')
         except:
             self.due = None
+        self.dateLastActivity = datetime.strptime(dateLastActivity,'%Y-%m-%dT%H:%M:%S.%fZ')
+
+class ViewModel:
+    def __init__(self, items, lists):
+        self._items = items
+        self._lists = lists
+
+    @property
+    def items(self):
+        return self._items
+    
+    @property
+    def lists(self):
+        return self._lists
+    
+    @property
+    def to_do_items(self):
+        list_id = search_list(self._lists,'To Do')
+        return [item for item in self._items if item.idList == list_id]
+    
+    @property
+    def doing_items(self):
+        list_id = search_list(self._lists,'Doing')
+        return [item for item in self._items if item.idList == list_id]
+    
+    @property
+    def done_items(self):
+        list_id = search_list(self._lists,'Done')
+        return [item for item in self._items if item.idList == list_id]
+
+    @property
+    def show_all_done_items(self):
+        return len(self.done_items) < 5
+
+    @property
+    def recent_done_items(self):
+        done_items = [item for item in self._items if item.idList == search_list(self._lists,'Done')]
+        return [item for item in done_items if item.dateLastActivity.date() == datetime.utcnow().date()]
+
+    @property
+    def older_done_items(self):
+        done_items = [item for item in self._items if item.idList == search_list(self._lists,'Done')]
+        return [item for item in done_items if item.dateLastActivity.date() < datetime.utcnow().date()]
 
 def get_auth_params():
     """
@@ -30,6 +74,18 @@ def get_auth_params():
         Authentication parameters in JSON format.
     """
     return {'key': os.environ.get('SECRET_KEY'),'token': os.environ.get('SECRET_TOKEN')}
+
+def search_list(list,name):
+    """
+    Searches the given array of lists for the list with the given name.
+    (Assumes there is only 1 match, which should be OK for this exercise)
+
+    Returns:
+        List ID of the list with matching name.
+    """
+    for item in list:
+        if item.name == name:
+            return item.id
 
 def get_lists():
     """
@@ -55,7 +111,7 @@ def get_cards():
     cards = []
 
     for card in (requests.get(f"https://api.trello.com/1/boards/{os.environ.get('BOARD_ID')}/cards",params=get_auth_params())).json():
-        cards.append(Card(card['id'],card['name'],card['idList'],card['desc'],card['due']))
+        cards.append(Card(card['id'],card['name'],card['idList'],card['desc'],card['due'],card['dateLastActivity']))
 
     return cards
 
@@ -95,5 +151,32 @@ def remove_card(card_id):
     post = requests.delete(f"https://api.trello.com/1/cards/{card_id}",params=get_auth_params())
     
     response_json = post.json()
+
+    return response_json
+
+
+def create_board(name):
+    """
+    Creates a Trello Board.
+
+    Returns:
+        JSON response.
+    """
+    post = requests.post(f"https://api.trello.com/1/boards/?name={name}",params=get_auth_params())
+    
+    response_json = post.json()
+
+    return response_json
+
+def delete_board(board_id):
+    """
+    Deletes a Trello Board.
+
+    Returns:
+        JSON response.
+    """
+    put = requests.delete(f"https://api.trello.com/1/boards/{board_id}",params=get_auth_params())
+    
+    response_json = put.json()
 
     return response_json

@@ -3,61 +3,177 @@
 
 {% block content %}
   <div class="jumbotron">
-    <h1 class="display-4">To-Do App</h1>
+    <h2 class="display-4">To-Do App</h2>
     <p class="lead">Just another to-do app.</p>
   </div>
   <div class="my-3 p-3 bg-white rounded shadow-sm">
     <h3 class="border-bottom border-gray pb-2 mb-0">Add Item</h3>
     <form action="/" method="post">
       <div class="input-group">
-        <input type="text" class="form-control" name="card_name">
+        <input type="text" class="form-control" name="card_name" id="card_name">
         <div class="input-group-append">
-          <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Add to</button>
+          <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="add_to_dropdown">Add to</button>
           <div class="dropdown-menu">
-            {% for move_list in lists %}
-            <button class="dropdown-item" name="submit_button" value="{{move_list['id']}}" type="submit">{{move_list['name']}}</button>
+            {% for move_list in view_model.lists %}
+              <button class="dropdown-item" name="submit_button" value="{{move_list['id']}}" id="add_to_{{move_list['name']}}" type="submit">{{move_list['name']}}</button>
             {% endfor %}
           </div>
         </div>
       </div>
     </form>
   </div>
-  {% for list in lists %}
-    <div class="my-3 p-3 bg-white rounded shadow-sm">
-      <h3 class="border-bottom border-gray pb-2 mb-0">{{list['name']}}</h3>
-        {% for card in cards %}
-          {% if list['id'] == card['idList'] %}
-            <div class="media text-muted pt-3">
-              <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
-                <div class="d-flex justify-content-between align-items-center w-100">
-                  <h6 class="text-gray-dark">{{card['name']}}</h6>
-                    <div class="dropdown">
-                      <button class="btn btn-secondary btn-sm" type="button" data-toggle="collapse" data-target="#collapse{{card['id']}}" aria-expanded="false" aria-controls="collapseExample">
-                        Expand
-                      </button>
-                      <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton_{{card['id']}}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Actions
-                      </button>
-                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_{{card['id']}}">
-                        {% for move_list in lists %}
-                          {% if move_list['id'] != card['idList'] %}
-                            <a class="dropdown-item" href="/move/{{card['id']}}/{{move_list['id']}}">Move to: {{move_list['name']}}</a>
-                          {% endif %}
-                        {% endfor %}
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="/remove/{{card['id']}}">Remove</a>
-                      </div>
-                    </div>
-                </div>
-                <div class="collapse" id="collapse{{card['id']}}">
-                  <small><b>Description:</b> {{card['desc']}}</small>
-                  <br>
-                  <small><b>Due:</b> {{card['due']}}</small>
+  <div class="my-3 p-3 bg-white rounded shadow-sm">
+    <h3 class="border-bottom border-gray pb-2 mb-0">To Do</h3>
+    {% for card in view_model.to_do_items %}
+      <div class="media text-muted pt-3">
+        <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+          <div class="d-flex justify-content-between align-items-center w-100">
+            <h6 class="text-gray-dark" id="to_do_item_{{card['id']}}">{{card['name']}}</h6>
+              <div class="dropdown">
+                <button class="btn btn-secondary btn-sm" type="button" data-toggle="collapse" data-target="#collapse{{card['id']}}" aria-expanded="false" aria-controls="collapseExample">
+                  Expand
+                </button>
+                <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton_{{card['id']}}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Actions
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_{{card['id']}}">
+                  {% for move_list in view_model.lists %}
+                    {% if move_list['id'] != card['idList'] %}
+                      <a class="dropdown-item" href="/move/{{card['id']}}/{{move_list['id']}}">Move to: {{move_list['name']}}</a>
+                    {% endif %}
+                  {% endfor %}
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item" href="/remove/{{card['id']}}">Remove</a>
                 </div>
               </div>
-            </div>
-          {% endif %}
-        {% endfor %}
+          </div>
+          <div class="collapse" id="collapse{{card['id']}}">
+            <small><b>Description:</b> {{card['desc']}}</small>
+              {% if card['due'] %}
+                <br>
+                <small><b>Due:</b> {{card['due'].strftime('%d/%m/%Y')}}
+              {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  <div class="my-3 p-3 bg-white rounded shadow-sm">
+    <h3 class="border-bottom border-gray pb-2 mb-0">Doing</h3>
+    {% for card in view_model.doing_items %}
+      <div class="media text-muted pt-3">
+        <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+          <div class="d-flex justify-content-between align-items-center w-100">
+            <h6 class="text-gray-dark" id="doing_item_{{card['id']}}">{{card['name']}}</h6>
+              <div class="dropdown">
+                <button class="btn btn-secondary btn-sm" type="button" data-toggle="collapse" data-target="#collapse{{card['id']}}" aria-expanded="false" aria-controls="collapseExample">
+                  Expand
+                </button>
+                <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton_{{card['id']}}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Actions
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_{{card['id']}}">
+                  {% for move_list in view_model.lists %}
+                    {% if move_list['id'] != card['idList'] %}
+                      <a class="dropdown-item" href="/move/{{card['id']}}/{{move_list['id']}}">Move to: {{move_list['name']}}</a>
+                    {% endif %}
+                  {% endfor %}
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item" href="/remove/{{card['id']}}">Remove</a>
+                </div>
+              </div>
+          </div>
+          <div class="collapse" id="collapse{{card['id']}}">
+            <small><b>Description:</b> {{card['desc']}}</small>
+            {% if card['due'] %}
+              <br>
+              <small><b>Due:</b> {{card['due'].strftime('%d/%m/%Y')}}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  <div class="my-3 p-3 bg-white rounded shadow-sm">
+    <div class="d-flex justify-content-between align-items-center w-100">
+    <h3 class="border-bottom border-gray pb-2 mb-0">Done</h3>
+      {% if not view_model.show_all_done_items %}
+        <button class="btn btn-secondary btn-sm" type="button" data-toggle="collapse" data-target="#collapseOldItems" aria-expanded="false" aria-controls="collapseExample">
+          Toggle Older Items
+        </button>
+      {% endif %}
     </div>
-  {% endfor %}
+    {% for card in view_model.recent_done_items %}
+      <div class="media text-muted pt-3">
+        <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+          <div class="d-flex justify-content-between align-items-center w-100">
+            <h6 class="text-gray-dark" id="done_item_{{card['id']}}">{{card['name']}}</h6>
+              <div class="dropdown">
+                <button class="btn btn-secondary btn-sm" type="button" data-toggle="collapse" data-target="#collapse{{card['id']}}" aria-expanded="false" aria-controls="collapseExample">
+                  Expand
+                </button>
+                <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton_{{card['id']}}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Actions
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_{{card['id']}}">
+                  {% for move_list in view_model.lists %}
+                    {% if move_list['id'] != card['idList'] %}
+                      <a class="dropdown-item" href="/move/{{card['id']}}/{{move_list['id']}}">Move to: {{move_list['name']}}</a>
+                    {% endif %}
+                  {% endfor %}
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item" href="/remove/{{card['id']}}">Remove</a>
+                </div>
+              </div>
+          </div>
+          <div class="collapse" id="collapse{{card['id']}}">
+            <small><b>Description:</b> {{card['desc']}}</small>
+            {% if card['due'] %}
+              <br>
+              <small><b>Due:</b> {{card['due'].strftime('%d/%m/%Y')}}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+    {% for card in view_model.older_done_items %}
+      {% if not view_model.show_all_done_items %}
+        <div class="collapse" id="collapseOldItems">
+      {% endif %}
+      <div class="media text-muted pt-3">
+        <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+          <div class="d-flex justify-content-between align-items-center w-100">
+            <h6 class="text-gray-dark" id="done_item_{{card['id']}}">{{card['name']}}</h6>
+              <div class="dropdown">
+                <button class="btn btn-secondary btn-sm" type="button" data-toggle="collapse" data-target="#collapse{{card['id']}}" aria-expanded="false" aria-controls="collapseExample">
+                  Expand
+                </button>
+                <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton_{{card['id']}}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Actions
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_{{card['id']}}">
+                  {% for move_list in view_model.lists %}
+                    {% if move_list['id'] != card['idList'] %}
+                      <a class="dropdown-item" href="/move/{{card['id']}}/{{move_list['id']}}">Move to: {{move_list['name']}}</a>
+                    {% endif %}
+                  {% endfor %}
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item" href="/remove/{{card['id']}}">Remove</a>
+                </div>
+              </div>
+          </div>
+          <div class="collapse" id="collapse{{card['id']}}">
+            <small><b>Description:</b> {{card['desc']}}</small>
+            {% if card['due'] %}
+              <br>
+              <small><b>Due:</b> {{card['due'].strftime('%d/%m/%Y')}}
+            {% endif %}
+          </div>
+        </div>
+      {% if not view_model.show_all_done_items %}
+        </div>
+      {% endif %}
+      </div>
+    {% endfor %}
+  </div>
 {% endblock %}
