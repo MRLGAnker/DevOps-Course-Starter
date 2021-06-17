@@ -120,6 +120,7 @@ env/
 .env
 
 #vagrant cache
+.vagrant
 .vagrant/
 
 #vscode setttings

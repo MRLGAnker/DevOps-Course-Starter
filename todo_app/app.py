@@ -5,7 +5,6 @@ from todo_app.data.session_items import create_card, get_lists, get_cards, move_
 from todo_app.flask_config import Config
 
 def create_app():
-
     app = Flask(__name__)
     app.config.from_object(Config)
 
