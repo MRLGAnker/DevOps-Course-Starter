@@ -10,7 +10,7 @@ def create_app():
 
     @app.route('/')
     def index():
-        item_view_model = ViewModel(get_lists())
+        item_view_model = ViewModel(get_cards(),get_lists())
         return render_template('index.html', view_model=item_view_model)
 
 
@@ -32,8 +32,7 @@ def create_app():
         remove_card(card_id)
         return redirect('/')
 
-
-    if __name__ == '__main__':
-        app.run()
-
     return app
+        
+if __name__ == '__main__':
+    create_app().run()

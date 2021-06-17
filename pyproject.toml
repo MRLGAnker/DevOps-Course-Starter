@@ -12,8 +12,11 @@ requests = "^2.25.1"
 DateTime = "^4.3"
 pytest = "^6.2.2"
 gunicorn = "^20.0.4"
+selenium = "^3.141.0"
+webdriver-manager = "^3.4.1"
 
 [tool.poetry.dev-dependencies]
+pylint = "^2.8.3"
 
 [build-system]
 requires = ["poetry>=0.12"]

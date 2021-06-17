@@ -1,84 +1,82 @@
-from todo_app.data.session_items import *
+import pytest
+import os
+from dotenv import load_dotenv, find_dotenv
+from todo_app import app
+from unittest.mock import Mock, patch
 
-class TestGetCards_ToDo:
+@pytest.fixture
+def client():
+    file_path = find_dotenv('.env.test')
+    load_dotenv(file_path, override=True)
+    test_app = app.create_app()
+    with test_app.test_client() as client:
+        yield client
 
-    @staticmethod
-    def test_to_do_items():
+@patch('requests.get')
+def test_index_page(mock_get_requests, client):
+    file_path = find_dotenv('.env.test')
+    load_dotenv(file_path, override=True)
+    mock_get_requests.side_effect = mock_request
+    response = client.get('/')
 
-        # Arrange
-        list_id = '6023b202e61c2b748a497dea'
+    assert response.status_code == 200
+    assert b'To Do Item' in response.data
+    assert b'Doing Item' in response.data
+    assert b'Test Done Item' in response.data
+	 
+def mock_request(url,params):
+    if url.startswith(f"https://api.trello.com/1/boards/{os.environ.get('BOARD_ID')}/lists"):
+        response = Mock()
 
-        # Act
-        cards = get_cards_from_list(list_id)
+        json_return = [
+            {
+                "id": "987",
+                "name": "To Do"
+            },
+            {
+                "id": "876",
+                "name": "Doing"
+            },
+            {
+                "id": "765",
+                "name": "Done"
+            }
+        ]
+        response.json.return_value = json_return
+        return response
+    
+    elif url.startswith(f"https://api.trello.com/1/boards/{os.environ.get('BOARD_ID')}/cards"):
+        response = Mock()
 
-        # Assert
-        assert len(cards) == 2
-
-class TestGetCards_Doing:
-
-    @staticmethod
-    def test_to_do_items():
-
-        # Arrange
-        list_id = '6023b202e61c2b748a497deb'
-
-        # Act
-        cards = get_cards_from_list(list_id)
-
-        # Assert
-        assert len(cards) == 1
-        
-class TestGetCards_Done:
-
-    @staticmethod
-    def test_to_do_items():
-
-        # Arrange
-        list_id = '6023b202e61c2b748a497dec'
-
-        # Act
-        cards = get_cards_from_list(list_id)
-
-        # Assert
-        assert len(cards) == 7
-
-class TestGetLists:
-
-    @staticmethod
-    def test_get_lists():
-
-        # Arrange
-
-        # Act
-        lists = get_lists()
-
-        # Assert
-        assert len(lists) == 3
-
-class TestGetRecentDoneItems:
-
-    @staticmethod
-    def test_get_lists():
-
-        # Arrange
-        cards = get_cards_from_list('6023b202e61c2b748a497dec')
-
-        # Act
-        recent_items = recent_done_items(cards)
-
-        # Assert
-        assert len(recent_items) == 1
-
-class TestGetOlderDoneItems:
-
-    @staticmethod
-    def test_get_lists():
-
-        # Arrange
-        cards = get_cards_from_list('6023b202e61c2b748a497dec')
-
-        # Act
-        recent_items = older_done_items(cards)
-
-        # Assert
-        assert len(recent_items) == 6
+        json_return = [
+            {
+                "id": "123",
+                "dateLastActivity": "2021-04-11T17:10:36.263Z",
+                "desc": "Test To Do Item",
+                "idBoard": "B04RD",
+                "idList": "987",
+                "name": "To Do Item",
+                "due": None
+            },
+            {
+                "id": "234",
+                "dateLastActivity": "2021-04-20T06:11:36.345Z",
+                "desc": "Test Doing Item",
+                "idBoard": "B04RD",
+                "idList": "876",
+                "name": "Doing Item",
+                "due": "2021-04-28T00:00:00.000Z"
+            },
+            {
+                "id": "345",
+                "dateLastActivity": "2021-05-01T12:43:36.286Z",
+                "desc": "Test Done Item",
+                "idBoard": "B04RD",
+                "idList": "765",
+                "name": "Done Item",
+                "due": "2021-05-05T00:00:00.000Z"
+            }
+        ]
+        response.json.return_value = json_return
+        return response
+    return None
