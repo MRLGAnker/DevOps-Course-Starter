@@ -14,7 +14,7 @@ EXPOSE 5000
 FROM base as production
 ENV FLASK_ENV=production
 RUN poetry install
-ENTRYPOINT ["poetry","run","gunicorn","--daemon","-b","0.0.0.0","todo_app.wsgi:wsgi_app","--log-file","logs.log"]
+ENTRYPOINT ["poetry","run","gunicorn","--bind", "0.0.0.0:5000", "todo_app.app:create_app()"]
 
 FROM base as development
 RUN poetry install
