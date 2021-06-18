@@ -66,7 +66,7 @@ You can then run: "poetry run pytest" to execute all the currently defined tests
 ### Starting the app with Vagrant
   
 ##### Download and install Vagrant: 
-* Hypervisor - Vagrant requires a hypervisor installed. recommended [VirtualBox](https://www.virtualbox.org/).
+* Hypervisor - Vagrant requires a hypervisor installed [VirtualBox](https://www.virtualbox.org/) is recommended.
 * Vagrant - Download and install vagrant from the [official website](https://www.vagrantup.com/). You can check it's installed correctly by running the `vagrant` command in your terminal.
 
 ##### Create the VM
