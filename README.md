@@ -61,4 +61,16 @@ Now visit [`http://localhost:5000/`](http://localhost:5000/) in your web browser
 
 To run the tests requires pytest to be installed, if you have run through the Dependencies step it should have been installed when you ran 'poetry install'.
 
-You can then run: "poetry run pytest" to execute all the currently defined tests. 
+You can then run: "poetry run pytest" to execute all the currently defined tests.
+
+### Starting the app with Vagrant
+  
+##### Download and install Vagrant: 
+* Hypervisor - Vagrant requires a hypervisor installed. recommended [VirtualBox](https://www.virtualbox.org/).
+* Vagrant - Download and install vagrant from the [official website](https://www.vagrantup.com/). You can check it's installed correctly by running the `vagrant` command in your terminal.
+
+##### Create the VM
+* `vagrant up` - Starts your VM, creating and provisioning it automatically if it is required. This command will automatically run the app on the browser.
+* `vagrant ssh` - explore this VM using the bash shell. 
+
+You can then visit http://localhost:5000/ in your web browser to view the app.
