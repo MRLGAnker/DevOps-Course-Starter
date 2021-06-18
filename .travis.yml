@@ -11,3 +11,4 @@ script:
 - docker build --target test --tag todo-app:test .
 - docker run todo-app:test tests/test_viewmodel.py
 - docker run --env-file .env.test todo-app:test tests/test_todo.py
+- docker run --env SECRET_KEY --env SECRET_TOKEN --env BOARD_ID todo-app:test tests_e2e/test_e2e.py
