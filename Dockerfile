@@ -19,3 +19,7 @@ ENTRYPOINT ["poetry","run","gunicorn","--bind", "0.0.0.0:5000", "todo_app.app:cr
 FROM base as development
 RUN poetry install
 ENTRYPOINT ["poetry", "run", "flask", "run", "-h", "0.0.0.0", "-p", "5000"]
+
+FROM base as test
+RUN poetry install
+ENTRYPOINT ["poetry", "run", "pytest"]
