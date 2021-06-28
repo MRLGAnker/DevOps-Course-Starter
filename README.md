@@ -61,4 +61,35 @@ Now visit [`http://localhost:5000/`](http://localhost:5000/) in your web browser
 
 To run the tests requires pytest to be installed, if you have run through the Dependencies step it should have been installed when you ran 'poetry install'.
 
-You can then run: "poetry run pytest" to execute all the currently defined tests. 
+You can then run: "poetry run pytest" to execute all the currently defined tests.
+
+## Using Docker containers
+
+Download: 
+* Docker - you'll need to install [Docker Desktop](https://www.docker.com/products/docker-desktop). Installation instructions for Windows can be found [here](https://docs.docker.com/docker-for-windows/install/). If prompted to choose between using Linux or Windows containers during setup, make sure you choose Linux containers.
+
+### Running the Containers
+
+#### Dev Container
+* Enables Flask's debugging/developer modes
+
+##### Build
+```bash
+$ docker build --target development --tag todo-app:dev .
+```
+##### Run
+```bash
+$ docker run --env-file .env -p 5000:5000 -v "$(pwd)/todo_app:/DevOps-Course-Starter/todo_app" todo-app:dev
+```
+
+#### Prod Container
+* Enables Flask's debugging/developer modes
+
+##### Build
+```bash
+$ docker build --target production --tag todo-app:prod .
+```
+##### Run
+```bash
+$ docker run --env-file .env -p 5000:5000 todo-app:prod
+```
