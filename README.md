@@ -82,8 +82,19 @@ $ docker build --target development --tag todo-app:dev .
 $ docker run --env-file .env -p 5000:5000 -v "$(pwd)/todo_app:/DevOps-Course-Starter/todo_app" todo-app:dev
 ```
 
+#### Test Container
+* Runs the tests in the test & test_e2e folders
+
+##### Build
+```bash
+$ docker build --target test --tag todo-app:test .
+```
+##### Run
+```bash
+$ docker run --env-file .env -p 5000:5000 todo-app:test
+```
+
 #### Prod Container
-* Enables Flask's debugging/developer modes
 
 ##### Build
 ```bash

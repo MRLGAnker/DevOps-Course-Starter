@@ -2,6 +2,7 @@ import pytest
 import os
 from threading import Thread
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.chrome.options import Options
 from todo_app import app
 from todo_app.data.session_items import create_board, delete_board
 from dotenv import find_dotenv,load_dotenv
@@ -28,8 +29,12 @@ def app_with_temp_board():
 
 @pytest.fixture(scope="module")
 def driver():
-    with webdriver.Chrome(executable_path=ChromeDriverManager().install()) as driver:
-        yield driver
+	chrome_options = Options()
+	chrome_options.add_argument('--headless')
+	chrome_options.add_argument('--no-sandbox')
+	chrome_options.add_argument('--disable-dev-shm-usage')
+	with webdriver.Chrome(executable_path=ChromeDriverManager().install(),options=chrome_options) as driver:
+		yield driver
 
 def test_task_journey(driver,app_with_temp_board):
 	driver.get('http://127.0.0.1:5000')
