@@ -9,5 +9,5 @@ env:
 
 script:
 - docker build --target test --tag todo-app:test .
-- docker run todo-app:test tests
+- docker run --env SECRET_KEY --env SECRET_TOKEN --env BOARD_ID todo-app:test tests
 - docker run --env SECRET_KEY --env SECRET_TOKEN --env BOARD_ID todo-app:test tests_e2e
