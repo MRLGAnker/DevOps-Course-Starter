@@ -1,7 +1,7 @@
 FROM python:3.9-slim-buster as base
 
 WORKDIR /DevOps-Course-Starter
-COPY poetry.lock pyproject.toml /DevOps-Course-Starter/
+COPY poetry.lock pyproject.toml ./
 
 RUN apt-get update && pip install --upgrade pip && pip install poetry
 
