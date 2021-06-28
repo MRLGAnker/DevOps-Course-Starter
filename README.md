@@ -79,7 +79,7 @@ $ docker build --target development --tag todo-app:dev .
 ```
 ##### Run
 ```bash
-$ docker run --env-file .env -p 5000:5000 -v "$(pwd)/todo_app:/todo_app/todo_app" todo-app:dev
+$ docker run --env-file .env -p 5000:5000 -v "$(pwd)/todo_app:/DevOps-Course-Starter/todo_app" todo-app:dev
 ```
 
 #### Test Container

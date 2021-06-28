@@ -1,0 +1,28 @@
+# ignore .git and .cache folders
+.git
+.cache
+
+# OS cache stuff
+.DS_Store
+.thumbsdb
+
+# Virtual environment
+env/
+.venv/
+
+# Configuration files
+.env
+
+# Vagrant cache
+.vagrant
+.vagrant/
+
+# VSCode setttings
+.vscode/
+
+# Pyenv
+.python-version
+
+# Ingore files
+.gitignore
+.dockerignore
