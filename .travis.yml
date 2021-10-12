@@ -27,4 +27,4 @@ deploy:
   provider: script
   script: heroku container:release web --app ganker-todo-app
   on:
-    branch: master
+    branch: pex8
