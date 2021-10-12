@@ -20,7 +20,7 @@ before_deploy:
 - docker build --target production --tag $DOCKER_USERNAME/todo-app:latest .
 - docker push $DOCKER_USERNAME/todo-app:latest
 - docker login --username=_ --password=$HEROKU_API_KEY registry.heroku.com
-- docker tag $DOCKER_USER/todo-app:latest registry.heroku.com/ganker-todo-app/web
+- docker tag $DOCKER_USERNAME/todo-app:latest registry.heroku.com/ganker-todo-app/web
 - docker push registry.heroku.com/ganker-todo-app/web
 
 deploy:
