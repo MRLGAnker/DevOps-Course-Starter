@@ -1,5 +1,6 @@
 services:
 - docker
+
 env:
   global:
   - secure: wIoZgAuj3XDeUYm2NLFJpSFwJmSCX++AxQLdqzEv1Psij8g1da1KJYn9Jq1MYa6OOdGnHCLlc2+/SvVcH9/gHayUQJZPzECkoiu1+H/dxY1od2wnWaeKqzLSZAggP49DWTPy+uMH5+5geID1H67tSMuRPkpxy80OYkdiDSyv2LIlrAJTXiRw0iwC7sx67gUoZofIFf6cZ6S4x7HJbSDWN/dZKWTBM4acXqp1XeU0VeyC5otXGtchPk+UhW59chspTOez2t3uUK7UZWxou/83rMsayZ23yZAcQ6+dyCOrxVQwcY2jwx4swzUbqkRJ13kZlGqt9ibSSx0tgTtaCOMkqAGxM+snq83FTCY6GQNkUJrSp643k2sl/x2fU3UmnoNovcvQLV5Xob+B15QS0wThPln8Cxz6M0iiRm2bb+rjd4Bv79oumZDlzoaG7kK3e30DxwKVU1ikOOtJsxPE2aM7NDGG+XoEPvQFEVBrq6bB3q3MLs4Bhoq/uKUGlyhJzJgzep13qM9/UTKcGdmXmKnbRjp+LpUbliz0GCoRKXfx6jpuPiZEYuExY6RIzuHOSpHsROUTNLhoCkJANPs3xNU8mKO3Yf3a5LnWtvOANXBOtc6bMqdfo08bizwNVn13fphNhyCxgw7jtqySkWUuw84xPEf6QVieCm+BeZS98UxoshM=
@@ -13,6 +14,6 @@ script:
 - docker run --env SECRET_KEY --env SECRET_TOKEN --env BOARD_ID todo-app:test tests
 - docker run --env SECRET_KEY --env SECRET_TOKEN --env BOARD_ID todo-app:test tests_e2e
 
-- echo $DOCKER_PASSWORD | docker login --username $DOCKER_USER --password-stdin
-- docker build --target production --tag $DOCKER_USER/todo-app:latest .
-- docker push $DOCKER_USER/todo-app:latest
+- echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin
+- docker build --target production --tag $DOCKER_USERNAME/todo-app:latest .
+- docker push $DOCKER_USERNAME/todo-app:latest
