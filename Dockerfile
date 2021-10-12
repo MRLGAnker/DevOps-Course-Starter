@@ -9,13 +9,16 @@ RUN poetry config virtualenvs.create false
 
 COPY . /DevOps-Course-Starter/
 
+ENV FLASK_ENV=production \
+  PORT=5000
+
 EXPOSE 5000
 
 FROM base as production
-ENV FLASK_ENV=production
-ENV PORT=5000
 RUN poetry install
-ENTRYPOINT ["poetry","run","gunicorn","--bind", "0.0.0.0:$PORT", "todo_app.app:create_app()"]
+RUN RUN poetry config virtualenvs.create false --local && poetry install && chmod +x ./entrypoint.sh
+EXPOSE 5000
+ENTRYPOINT ./entrypoint.sh
 
 FROM base as development
 RUN poetry install
