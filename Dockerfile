@@ -12,8 +12,6 @@ COPY . /DevOps-Course-Starter/
 ENV FLASK_ENV=production \
   PORT=5000
 
-EXPOSE 5000
-
 FROM base as production
 RUN poetry install && chmod +x ./entrypoint.sh
 EXPOSE 5000
