@@ -13,12 +13,13 @@ EXPOSE 5000
 
 FROM base as production
 ENV FLASK_ENV=production
+ENV PORT=5000
 RUN poetry install
-ENTRYPOINT ["poetry","run","gunicorn","--bind", "0.0.0.0:5000", "todo_app.app:create_app()"]
+ENTRYPOINT ["poetry","run","gunicorn","--bind", "0.0.0.0:$PORT", "todo_app.app:create_app()"]
 
 FROM base as development
 RUN poetry install
-ENTRYPOINT ["poetry", "run", "flask", "run", "-h", "0.0.0.0", "-p", "5000"]
+ENTRYPOINT ["poetry", "run", "flask", "run", "-h", "0.0.0.0", "-p", "$PORT"]
 
 FROM base as test
 RUN apt-get update -qqy && apt-get install -qqy wget gnupg unzip
