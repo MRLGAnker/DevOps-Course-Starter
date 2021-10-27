@@ -70,15 +70,7 @@ def connect_db():
     client = pymongo.MongoClient(f"mongodb+srv://{os.environ.get('MONGO_USERNAME')}:{os.environ.get('MONGO_PASSWORD')}@{os.environ.get('MONGO_URL')}/{os.environ.get('MONGO_DATABASE')}?w=majority")
     db = client[os.environ.get('MONGO_NAMESPACE')]
     return db
-#
-#default_lists = [{"name": "To Do"},{"name": "Doing"},{"name": "Done"}]
-#for default_list in default_lists:
-#    db.lists.update_one(
-#    default_list, 
-#    {"$set": default_list},
-#    True
-#  )
-#
+
 def get_lists():
     """
     Fetches all Lists from the given Trello Board.
@@ -147,7 +139,17 @@ def remove_card(card_id):
     """
     return connect_db().cards.delete_one({"_id": ObjectId(card_id)})
 
-#create_card('Test test test',"617066eb67b8981701242f06",'Test create',datetime.strptime('2021-10-01','%Y-%m-%d'))
-#new_card_id = (create_card('Test test test',"617066eb67b8981701242f06",'Test move',datetime.strptime('2021-10-01','%Y-%m-%d')).inserted_id)
-#move_card(new_card_id,'617066eb67b8981701242f1f')
-#print(len(get_cards(connect_db())))
+def create_board(name):
+    """
+    Creates a Trello Board.
+    """
+    client = pymongo.MongoClient(f"mongodb://{os.environ.get('MONGO_USERNAME')}:{os.environ.get('MONGO_PASSWORD')}@{os.environ.get('MONGO_URL')}/{os.environ.get('MONGO_DATABASE')}?w=majority")
+    db = client[name]
+    return db
+
+def delete_board(name):
+    """
+    Deletes a Trello Board.
+    """
+    client = pymongo.MongoClient(f"mongodb+srv://{os.environ.get('MONGO_USERNAME')}:{os.environ.get('MONGO_PASSWORD')}@{os.environ.get('MONGO_URL')}/{os.environ.get('MONGO_DATABASE')}?w=majority")
+    client.drop_database(name)

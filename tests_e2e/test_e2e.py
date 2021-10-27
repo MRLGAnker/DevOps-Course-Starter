@@ -4,18 +4,28 @@ from threading import Thread
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from todo_app import app
-from todo_app.data.session_items import create_board, delete_board
+from todo_app.data.session_items import create_board, delete_board, connect_db
 from dotenv import find_dotenv,load_dotenv
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
+from datetime import datetime, timedelta
 
 @pytest.fixture(scope='module')
 def app_with_temp_board():
 	file_path = find_dotenv('.env')
 	load_dotenv(file_path, override=True)
 
-	board_id = create_board("e2e Test Board")['id']
-	os.environ['BOARD_ID'] = board_id
+	os.environ['MONGO_NAMESPACE'] = "e2e_Test_Board"
+	db = create_board(os.environ.get('MONGO_NAMESPACE'))
+
+	default_lists = [{"name": "To Do"},{"name": "Doing"},{"name": "Done"}]
+	for default_list in default_lists:
+		db.lists.update_one(
+		default_list, 
+		{"$set": default_list},
+		True
+	)
+
 	
 	application = app.create_app()
 	
@@ -25,7 +35,7 @@ def app_with_temp_board():
 	yield app
 	
 	thread.join(1)
-	delete_board(board_id)
+	delete_board(os.environ.get('MONGO_NAMESPACE'))
 
 @pytest.fixture(scope="module")
 def driver():
@@ -42,6 +52,8 @@ def test_task_journey(driver,app_with_temp_board):
 	assert driver.title == 'To-Do App'
 
 	driver.find_element_by_id('card_name').send_keys('Test Item Name')
+	driver.find_element_by_id('card_desc').send_keys('Test Item Description')
+	driver.find_element_by_id('card_due').send_keys((datetime.utcnow() + timedelta(days=2)).strftime("%m/%d/%Y"))
 	driver.find_element_by_id('add_to_dropdown').click()
 	driver.find_element_by_id('add_to_To Do').click()
 
