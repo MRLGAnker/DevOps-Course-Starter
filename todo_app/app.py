@@ -1,5 +1,5 @@
-from pprint import pprint
 from flask import Flask, render_template, request, redirect
+from datetime import datetime
 from todo_app.data.session_items import create_card, get_lists, get_cards, move_card, remove_card, ViewModel
 
 from todo_app.flask_config import Config
@@ -16,8 +16,7 @@ def create_app():
 
     @app.route('/',methods=['POST'])
     def test():
-        name=request.form.get("card_name")
-        create_card(name,request.form['submit_button'])
+        create_card(request.form.get("card_desc"),request.form.get('submit_button'),request.form.get('card_name'),request.form.get('card_due'))
         return redirect('/')
 
 

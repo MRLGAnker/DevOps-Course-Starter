@@ -1,7 +1,7 @@
-from logging import Formatter
+import pymongo
 import os
-import requests
-from datetime import date, datetime
+from datetime import datetime
+from bson.objectid import ObjectId
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -19,10 +19,10 @@ class Card:
         self.idList = idList
         self.desc = desc
         try:
-            self.due = self.due = datetime.strptime(due,'%Y-%m-%dT%H:%M:%S.%fZ')
+            self.due = datetime.strptime(due,'%d/%m/%Y')
         except:
             self.due = None
-        self.dateLastActivity = datetime.strptime(dateLastActivity,'%Y-%m-%dT%H:%M:%S.%fZ')
+        self.dateLastActivity = dateLastActivity
 
 class ViewModel:
     def __init__(self, items, lists):
@@ -53,10 +53,6 @@ class ViewModel:
         return [item for item in self._items if item.idList == list_id]
 
     @property
-    def show_all_done_items(self):
-        return len(self.done_items) < 5
-
-    @property
     def recent_done_items(self):
         done_items = [item for item in self._items if item.idList == search_list(self._lists,'Done')]
         return [item for item in done_items if item.dateLastActivity.date() == datetime.utcnow().date()]
@@ -66,14 +62,36 @@ class ViewModel:
         done_items = [item for item in self._items if item.idList == search_list(self._lists,'Done')]
         return [item for item in done_items if item.dateLastActivity.date() < datetime.utcnow().date()]
 
-def get_auth_params():
+    @property
+    def show_all_done_items(self):
+        return len(self.done_items) < 5
+
+def connect_db():
+    client = pymongo.MongoClient(f"mongodb+srv://{os.environ.get('MONGO_USERNAME')}:{os.environ.get('MONGO_PASSWORD')}@{os.environ.get('MONGO_URL')}/{os.environ.get('MONGO_DATABASE')}?w=majority")
+    db = client[os.environ.get('MONGO_NAMESPACE')]
+    return db
+#
+#default_lists = [{"name": "To Do"},{"name": "Doing"},{"name": "Done"}]
+#for default_list in default_lists:
+#    db.lists.update_one(
+#    default_list, 
+#    {"$set": default_list},
+#    True
+#  )
+#
+def get_lists():
     """
-    Returns authentication parameters.
+    Fetches all Lists from the given Trello Board.
 
     Returns:
-        Authentication parameters in JSON format.
+        JSON response.
     """
-    return {'key': os.environ.get('SECRET_KEY'),'token': os.environ.get('SECRET_TOKEN')}
+    lists = []
+
+    for list in connect_db().lists.find({}):
+        lists.append(List(list['_id'],list['name']))
+
+    return lists
 
 def search_list(list,name):
     """
@@ -87,46 +105,29 @@ def search_list(list,name):
         if item.name == name:
             return item.id
 
-def get_lists():
+def get_cards():
     """
     Fetches all Lists from the given Trello Board.
 
     Returns:
         JSON response.
     """
-    lists = []
-
-    for list in (requests.get(f"https://api.trello.com/1/boards/{os.environ.get('BOARD_ID')}/lists",params=get_auth_params())).json():
-        lists.append(List(list['id'],list['name']))
-
-    return lists
-
-def get_cards():
-    """
-    Fetches all Cards from the given Trello Board.
-
-    Returns:
-        JSON response.
-    """
     cards = []
 
-    for card in (requests.get(f"https://api.trello.com/1/boards/{os.environ.get('BOARD_ID')}/cards",params=get_auth_params())).json():
-        cards.append(Card(card['id'],card['name'],card['idList'],card['desc'],card['due'],card['dateLastActivity']))
+    for card in connect_db().cards.find({}):
+        cards.append(Card(card['_id'],card['name'],card['idList'],card['desc'],card['due'],card['dateLastActivity']))
 
     return cards
 
-def create_card(name,list_id):
+def create_card(desc,list_id,name,due):
     """
     Creates a card with the given name and Trello List.
 
     Returns:
         JSON response.
     """
-    post = requests.post(f"https://api.trello.com/1/cards?name={name}&idList={list_id}",params=get_auth_params())
-    
-    response_json = post.json()
-
-    return response_json
+    card = {"dateLastActivity": datetime.utcnow(),"desc": desc,"idList": ObjectId(list_id),"name": name,"due": due}
+    return connect_db().cards.insert_one(card)
 
 def move_card(card_id,list_id):
     """
@@ -135,48 +136,18 @@ def move_card(card_id,list_id):
     Returns:
         JSON response.
     """
-    put = requests.put(f"https://api.trello.com/1/cards/{card_id}?idList={list_id}",params=get_auth_params())
-    
-    response_json = put.json()
-
-    return response_json
+    return connect_db().cards.update_one({"_id": ObjectId(card_id)},{ "$set": {"idList" : ObjectId(list_id)}})
 
 def remove_card(card_id):
     """
-    Moves an item to the given Trello List.
+    Removes a card with the given card id.
 
     Returns:
         JSON response.
     """
-    post = requests.delete(f"https://api.trello.com/1/cards/{card_id}",params=get_auth_params())
-    
-    response_json = post.json()
+    return connect_db().cards.delete_one({"_id": ObjectId(card_id)})
 
-    return response_json
-
-
-def create_board(name):
-    """
-    Creates a Trello Board.
-
-    Returns:
-        JSON response.
-    """
-    post = requests.post(f"https://api.trello.com/1/boards/?name={name}",params=get_auth_params())
-    
-    response_json = post.json()
-
-    return response_json
-
-def delete_board(board_id):
-    """
-    Deletes a Trello Board.
-
-    Returns:
-        JSON response.
-    """
-    put = requests.delete(f"https://api.trello.com/1/boards/{board_id}",params=get_auth_params())
-    
-    response_json = put.json()
-
-    return response_json
+#create_card('Test test test',"617066eb67b8981701242f06",'Test create',datetime.strptime('2021-10-01','%Y-%m-%d'))
+#new_card_id = (create_card('Test test test',"617066eb67b8981701242f06",'Test move',datetime.strptime('2021-10-01','%Y-%m-%d')).inserted_id)
+#move_card(new_card_id,'617066eb67b8981701242f1f')
+#print(len(get_cards(connect_db())))
