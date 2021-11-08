@@ -32,11 +32,12 @@ $ cp .env.template .env  # (first time only)
 
 The `.env` file is used by flask to set environment variables when running `flask run`. This enables things like development mode (which also enables features like hot reloading when you make a file change).
 
-## Add Trello API details to .env file
+## Add MongoDB details to .env file
 Add the following to the .env file:
-SECRET_KEY=<Trello API Key>
-SECRET_TOKEN=<Trello API Token>
-BOARD_ID=<Trello Board ID>
+MONGO_USERNAME=<MongoDB Username>
+MONGO_PASSWORD=<MongoDB Password>
+MONGO_URL=<MongoDB URL>
+MONGO_DATABASE=<MongoDB Database>
 
 ## Running the App
 
