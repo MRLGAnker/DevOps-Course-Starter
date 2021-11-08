@@ -4,7 +4,7 @@ from threading import Thread
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from todo_app import app
-from todo_app.data.session_items import create_board, delete_board, connect_db
+from todo_app.data.session_items import create_board, delete_board
 from dotenv import find_dotenv,load_dotenv
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
@@ -13,37 +13,32 @@ from datetime import datetime, timedelta
 @pytest.fixture(scope='module')
 def app_with_temp_board():
 	file_path = find_dotenv('.env')
-	load_dotenv(file_path, override=True)
+	load_dotenv(file_path,override=True)
 
-	os.environ['MONGO_NAMESPACE'] = "e2e_Test_Board"
-	db = create_board(os.environ.get('MONGO_NAMESPACE'))
+	os.environ['MONGO_DATABASE'] = "e2e_Test_Board"
+	db = create_board(os.environ.get('MONGO_DATABASE'))
 
 	default_lists = [{"name": "To Do"},{"name": "Doing"},{"name": "Done"}]
 	for default_list in default_lists:
-		db.lists.update_one(
-		default_list, 
-		{"$set": default_list},
-		True
-	)
-
+		db.lists.update_one(default_list,{"$set": default_list},True)
 	
 	application = app.create_app()
 	
 	thread = Thread(target=lambda: application.run(use_reloader=False))
 	thread.daemon = True
 	thread.start()
-	yield app
+	yield application
 	
 	thread.join(1)
-	delete_board(os.environ.get('MONGO_NAMESPACE'))
+	#delete_board("e2e_Test_Board")
 
 @pytest.fixture(scope="module")
 def driver():
 	chrome_options = Options()
-	chrome_options.add_argument('--headless')
-	chrome_options.add_argument('--no-sandbox')
-	chrome_options.add_argument('--disable-dev-shm-usage')
-	with webdriver.Chrome(executable_path=ChromeDriverManager().install(),options=chrome_options) as driver:
+	#chrome_options.add_argument('--headless')
+	#chrome_options.add_argument('--no-sandbox')
+	#chrome_options.add_argument('--disable-dev-shm-usage')
+	with webdriver.Chrome(executable_path=ChromeDriverManager().install()) as driver:
 		yield driver
 
 def test_task_journey(driver,app_with_temp_board):

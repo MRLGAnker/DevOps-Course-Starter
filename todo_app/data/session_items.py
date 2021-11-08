@@ -18,10 +18,7 @@ class Card:
         self.name = name
         self.idList = idList
         self.desc = desc
-        try:
-            self.due = datetime.strptime(due,'%d/%m/%Y')
-        except:
-            self.due = None
+        self.due = due
         self.dateLastActivity = dateLastActivity
 
 class ViewModel:
@@ -66,17 +63,37 @@ class ViewModel:
     def show_all_done_items(self):
         return len(self.done_items) < 5
 
+def get_connection():
+    connection_string = f"mongodb+srv://{os.environ.get('MONGO_USERNAME')}:{os.environ.get('MONGO_PASSWORD')}@{os.environ.get('MONGO_URL')}"
+    return connection_string
+
+def get_database():
+    db_name = os.getenv('MONGO_DATABASE')
+    return db_name
+
 def connect_db():
-    client = pymongo.MongoClient(f"mongodb+srv://{os.environ.get('MONGO_USERNAME')}:{os.environ.get('MONGO_PASSWORD')}@{os.environ.get('MONGO_URL')}/{os.environ.get('MONGO_DATABASE')}?w=majority")
-    db = client[os.environ.get('MONGO_NAMESPACE')]
+    connection = get_connection()
+    name = get_database()
+    client = pymongo.MongoClient(connection)
+    db = client[name]
     return db
+
+def check_default_lists():
+    """
+    Makes sure the 'To Do', 'Doing' & 'Done' lists exist, inserts them if not.
+    """
+    default_lists = [{'name': 'To Do'},{'name': 'Doing'},{'name': 'Done'}]
+    db = connect_db()
+
+    for default_list in default_lists:
+        db.lists.update_one(default_list,{"$set": default_list},True)
 
 def get_lists():
     """
-    Fetches all Lists from the given Trello Board.
+    Fetches all lists in the db.
 
     Returns:
-        JSON response.
+        List of 'List' objects.
     """
     lists = []
 
@@ -99,10 +116,10 @@ def search_list(list,name):
 
 def get_cards():
     """
-    Fetches all Lists from the given Trello Board.
+    Fetches all cards in the db.
 
     Returns:
-        JSON response.
+        List of 'Card' objects.
     """
     cards = []
 
@@ -113,17 +130,18 @@ def get_cards():
 
 def create_card(desc,list_id,name,due):
     """
-    Creates a card with the given name and Trello List.
+    Creates a card with the given name, list_id & due.
 
     Returns:
         JSON response.
     """
-    card = {"dateLastActivity": datetime.utcnow(),"desc": desc,"idList": ObjectId(list_id),"name": name,"due": due}
-    return connect_db().cards.insert_one(card)
+    test = connect_db()
+    card = {"dateLastActivity": datetime.utcnow(),"desc": desc,"idList": ObjectId(list_id),"name": name,"due": datetime.strptime(due,'%d/%m/%Y')}
+    return test.cards.insert_one(card)
 
 def move_card(card_id,list_id):
     """
-    Moves an item to the given Trello List.
+    Moves the card with the given card_id to the list with the given list_id.
 
     Returns:
         JSON response.
@@ -132,7 +150,7 @@ def move_card(card_id,list_id):
 
 def remove_card(card_id):
     """
-    Removes a card with the given card id.
+    Removes a card with the given card_id.
 
     Returns:
         JSON response.
@@ -141,15 +159,18 @@ def remove_card(card_id):
 
 def create_board(name):
     """
-    Creates a Trello Board.
+    Creates a database.
     """
-    client = pymongo.MongoClient(f"mongodb://{os.environ.get('MONGO_USERNAME')}:{os.environ.get('MONGO_PASSWORD')}@{os.environ.get('MONGO_URL')}/{os.environ.get('MONGO_DATABASE')}?w=majority")
+    connection = get_connection()
+    client = pymongo.MongoClient(connection)
     db = client[name]
+
     return db
 
 def delete_board(name):
     """
-    Deletes a Trello Board.
+    Deletes a database.
     """
-    client = pymongo.MongoClient(f"mongodb+srv://{os.environ.get('MONGO_USERNAME')}:{os.environ.get('MONGO_PASSWORD')}@{os.environ.get('MONGO_URL')}/{os.environ.get('MONGO_DATABASE')}?w=majority")
+    connection = get_connection()
+    client = pymongo.MongoClient(connection)
     client.drop_database(name)

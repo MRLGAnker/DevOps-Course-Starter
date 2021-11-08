@@ -19,7 +19,7 @@ ENTRYPOINT ./entrypoint.sh
 
 FROM base as development
 RUN poetry install
-ENTRYPOINT ["poetry", "run", "flask", "run", "-h", "0.0.0.0", "-p", "$PORT"]
+ENTRYPOINT ["poetry", "run", "flask", "run", "-h", "0.0.0.0", "-p", "5000"]
 
 FROM base as test
 RUN apt-get update -qqy && apt-get install -qqy wget gnupg unzip
