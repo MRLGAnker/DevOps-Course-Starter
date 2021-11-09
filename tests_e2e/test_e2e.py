@@ -41,7 +41,7 @@ def driver():
 	chrome_options.add_argument('--headless')
 	chrome_options.add_argument('--no-sandbox')
 	chrome_options.add_argument('--disable-dev-shm-usage')
-	with webdriver.Chrome(executable_path=ChromeDriverManager().install()) as driver:
+	with webdriver.Chrome(executable_path=ChromeDriverManager().install(),options=chrome_options) as driver:
 		yield driver
 
 def test_task_journey(driver,app_with_temp_board):

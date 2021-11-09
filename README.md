@@ -39,6 +39,11 @@ MONGO_PASSWORD=<MongoDB Password>
 MONGO_URL=<MongoDB URL>
 MONGO_DATABASE=<MongoDB Database>
 
+## Add OAuth details to .env file
+Add the following to the .env file:
+OAUTH_CLIENT_ID=<OAuth Client ID>
+OAUTH_CLIENT_SECRET=<OAuth Client Secret>
+
 ## Running the App
 
 Once the all dependencies have been installed, start the Flask app in development mode within the poetry environment by running:
