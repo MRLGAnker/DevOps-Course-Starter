@@ -9,12 +9,14 @@ from dotenv import find_dotenv,load_dotenv
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from datetime import datetime, timedelta
+from todo_app.user import TestUser
 
 @pytest.fixture(scope='module')
 def app_with_temp_board():
 	file_path = find_dotenv('.env')
 	load_dotenv(file_path,override=True)
 
+	os.environ['FLASK_ENV'] = "e2e_Test"
 	os.environ['MONGO_DATABASE'] = "e2e_Test_Board"
 	db = create_board(os.environ.get('MONGO_DATABASE'))
 
@@ -22,12 +24,13 @@ def app_with_temp_board():
 	for default_list in default_lists:
 		db.lists.update_one(default_list,{"$set": default_list},True)
 	
-	application = app.create_app()
+	test_app = app.create_app()
+	test_app.config['LOGIN_DISABLED'] = True
 	
-	thread = Thread(target=lambda: application.run(use_reloader=False))
+	thread = Thread(target=lambda: test_app.run(use_reloader=False))
 	thread.daemon = True
 	thread.start()
-	yield application
+	yield test_app
 	
 	thread.join(1)
 	#delete_board("e2e_Test_Board")

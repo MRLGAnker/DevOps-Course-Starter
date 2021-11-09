@@ -3,7 +3,7 @@ import requests
 from flask import Flask, render_template, request, redirect
 from datetime import datetime
 from todo_app.data.session_items import check_default_lists, create_card, get_lists, get_cards, move_card, remove_card, ViewModel
-from todo_app.user import User
+from todo_app.user import TestUser,User,Anonymous
 from flask_login import LoginManager, login_required, UserMixin, login_user, current_user
 from oauthlib.oauth2 import WebApplicationClient
 
@@ -23,7 +23,12 @@ def load_user(user_id):
 def create_app():
     app = Flask(__name__)
     app.secret_key = os.getenv('OAUTH_CLIENT_SECRET')
+    app.config['LOGIN_DISABLED'] = True
     login_manager.init_app(app)
+    if os.getenv('FLASK_ENV') == 'e2e_Test':
+        login_manager.anonymous_user = TestUser
+    else:
+        login_manager.anonymous_user = Anonymous
 
     check_default_lists()
 
@@ -31,28 +36,31 @@ def create_app():
     @login_required
     def index():
         item_view_model = ViewModel(get_cards(),get_lists())
-        return render_template('index.html', view_model=item_view_model)
+        return render_template('index.html',view_model=item_view_model,user_role=current_user.role)
 
 
     @app.route('/',methods=['POST'])
     @login_required
     def test():
-        create_card(request.form.get("card_desc"),request.form.get('submit_button'),request.form.get('card_name'),request.form.get('card_due'))
-        return redirect('/')
+        if 'LOGIN_DISABLED' in app.config or current_user.role == 'WRITER':
+            create_card(request.form.get("card_desc"),request.form.get('submit_button'),request.form.get('card_name'),request.form.get('card_due'))
+            return redirect('/')
 
 
     @app.route('/move/<card_id>/<list_id>',methods=['GET','POST'])
     @login_required
     def move(card_id,list_id):
-        move_card(card_id,list_id)
-        return redirect('/')
+        if 'LOGIN_DISABLED' in app.config or current_user.role == 'WRITER':
+            move_card(card_id,list_id)
+            return redirect('/')
 
 
     @app.route('/remove/<card_id>',methods=['GET','POST'])
     @login_required
     def remove(card_id):
-        remove_card(card_id)
-        return redirect('/')
+        if 'LOGIN_DISABLED' in app.config or current_user.role == 'WRITER':
+            remove_card(card_id)
+            return redirect('/')
 
     @app.route('/login/callback', methods=['GET', 'POST'])
     def callback():
