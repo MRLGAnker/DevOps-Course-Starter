@@ -11,9 +11,8 @@ env:
   - secure: uwa+em+aIDWz0TJTr+lFbxvCKIxSCrSGJl8pkYdBEztUkxx/+xwhnhYODlJvpE8sAtuZ3QwKUBXWuC1Bw5GgroaiSFX+c5Qax/3iW/CnZDn5z1+6l3PhMrUZ3icDbLpLgUU8TDk9ihsZ4Rs4Ow1XwA0KJfEQlS7MLGAMpXuuwaSmq68BBp6pP7AcYUhQcv0mynOOBWjQ+8sd2g+6ubIs55zN2I25uR2oDU7BRNzVapjm/m+D7oJ/2uNzXXYThRtWw8XJiqGtLxD5EG6g6omV7KNezXuU284Hmj3E/CQYYs1S+TzS4b1rcRuM40UmeOaMmtMgxUIWArx14hRXBlyWYpSNTmgE+5F8sGk74XzDei7N8yM3oo/0yI1cnUpjYsTF1g2i/UdpUTqurVUMdif/RUpo6j+ntzEdAYP3ZmdADh8SkbJwPHEik6eZLNYqcs88/y1GJszvpw3jIvXchHXGhARFFx0iNiBzqBD02/mlJ6RDqa9Vb7ZfccOdHCeP+idNCAJKXk3otBSnoM9ZaTPXZCVeOFJHQKKFZ5gZxoBWzlw4HaP2VK+1eU7lR5+LIUrVUoO+nKkHjWdAETsQ8pd8hSdO1l/APB9tbhIG1pL48t6kLtEgp/8zSX/rS96HH2Mw0jtP7/YqIlc3UYsw70YU/CTqZQm4nwKAW2rg1rwSgkk=
 script:
 - docker build --target test --tag todo-app:test .
-- docker run --env MONGO_USERNAME --env MONGO_PASSWORD --env MONGO_URL --env MONGO_DATABASE
-  todo-app:test tests
-- docker run --env MONGO_USERNAME --env MONGO_PASSWORD --env MONGO_URL --env MONGO_DATABASE
+- docker run todo-app:test tests
+- docker run --env MONGO_USERNAME --env MONGO_PASSWORD --env MONGO_URL --env MONGO_DATABASE --env MONGO_PROTOCOL
   todo-app:test tests_e2e
 before_deploy:
 - echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin
