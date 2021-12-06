@@ -37,6 +37,7 @@ Add the following to the .env file:
 MONGO_USERNAME=<MongoDB Username>
 MONGO_PASSWORD=<MongoDB Password>
 MONGO_URL=<MongoDB URL>
+MONGO_PROTOCOL=<MongoDB Protocol>
 MONGO_DATABASE=<MongoDB Database>
 
 ## Add OAuth details to .env file
