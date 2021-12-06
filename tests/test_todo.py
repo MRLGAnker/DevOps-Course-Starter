@@ -14,6 +14,7 @@ def client():
 
     with mongomock.patch(servers=((os.getenv('MONGO_URL'), 27017),)):
         test_app = todo_app.app.create_app()
+        test_app.config['LOGIN_DISABLED'] = True
 
         with test_app.test_client() as client:
             yield client
