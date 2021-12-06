@@ -64,7 +64,7 @@ class ViewModel:
         return len(self.done_items) < 5
 
 def get_connection():
-    connection_string = f"{os.environ.get('MONGO_PROTOCOL')}://{os.environ.get('MONGO_USERNAME')}:{os.environ.get('MONGO_PASSWORD')}@{os.environ.get('MONGO_URL')}"
+    connection_string = f"{os.environ.get('MONGO_PROTOCOL')}://{os.environ.get('MONGO_USERNAME')}:{os.environ.get('MONGO_PASSWORD')}@{os.environ.get('MONGO_URL')}/DefaultDatabase?ssl=true&retryWrites=false"
     return connection_string
 
 def get_database():

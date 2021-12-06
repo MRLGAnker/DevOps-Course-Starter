@@ -23,7 +23,7 @@ def load_user(user_id):
 def create_app():
     app = Flask(__name__)
     app.secret_key = os.getenv('OAUTH_CLIENT_SECRET')
-    app.config['LOGIN_DISABLED'] = True
+    #app.config['LOGIN_DISABLED'] = True
     login_manager.init_app(app)
     if os.getenv('FLASK_ENV') == 'e2e_Test':
         login_manager.anonymous_user = TestUser
