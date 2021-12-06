@@ -1,7 +1,7 @@
-from logging import Formatter
+import pymongo
 import os
-import requests
-from datetime import date, datetime
+from datetime import datetime
+from bson.objectid import ObjectId
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -18,11 +18,8 @@ class Card:
         self.name = name
         self.idList = idList
         self.desc = desc
-        try:
-            self.due = self.due = datetime.strptime(due,'%Y-%m-%dT%H:%M:%S.%fZ')
-        except:
-            self.due = None
-        self.dateLastActivity = datetime.strptime(dateLastActivity,'%Y-%m-%dT%H:%M:%S.%fZ')
+        self.due = due
+        self.dateLastActivity = dateLastActivity
 
 class ViewModel:
     def __init__(self, items, lists):
@@ -53,10 +50,6 @@ class ViewModel:
         return [item for item in self._items if item.idList == list_id]
 
     @property
-    def show_all_done_items(self):
-        return len(self.done_items) < 5
-
-    @property
     def recent_done_items(self):
         done_items = [item for item in self._items if item.idList == search_list(self._lists,'Done')]
         return [item for item in done_items if item.dateLastActivity.date() == datetime.utcnow().date()]
@@ -66,14 +59,48 @@ class ViewModel:
         done_items = [item for item in self._items if item.idList == search_list(self._lists,'Done')]
         return [item for item in done_items if item.dateLastActivity.date() < datetime.utcnow().date()]
 
-def get_auth_params():
+    @property
+    def show_all_done_items(self):
+        return len(self.done_items) < 5
+
+def get_connection():
+    connection_string = f"mongodb+srv://{os.environ.get('MONGO_USERNAME')}:{os.environ.get('MONGO_PASSWORD')}@{os.environ.get('MONGO_URL')}"
+    return connection_string
+
+def get_database():
+    db_name = os.getenv('MONGO_DATABASE')
+    return db_name
+
+def connect_db():
+    connection = get_connection()
+    name = get_database()
+    client = pymongo.MongoClient(connection)
+    db = client[name]
+    return db
+
+def check_default_lists():
     """
-    Returns authentication parameters.
+    Makes sure the 'To Do', 'Doing' & 'Done' lists exist, inserts them if not.
+    """
+    default_lists = [{'name': 'To Do'},{'name': 'Doing'},{'name': 'Done'}]
+    db = connect_db()
+
+    for default_list in default_lists:
+        db.lists.update_one(default_list,{"$set": default_list},True)
+
+def get_lists():
+    """
+    Fetches all lists in the db.
 
     Returns:
-        Authentication parameters in JSON format.
+        List of 'List' objects.
     """
-    return {'key': os.environ.get('SECRET_KEY'),'token': os.environ.get('SECRET_TOKEN')}
+    lists = []
+
+    for list in connect_db().lists.find({}):
+        lists.append(List(list['_id'],list['name']))
+
+    return lists
 
 def search_list(list,name):
     """
@@ -87,96 +114,63 @@ def search_list(list,name):
         if item.name == name:
             return item.id
 
-def get_lists():
-    """
-    Fetches all Lists from the given Trello Board.
-
-    Returns:
-        JSON response.
-    """
-    lists = []
-
-    for list in (requests.get(f"https://api.trello.com/1/boards/{os.environ.get('BOARD_ID')}/lists",params=get_auth_params())).json():
-        lists.append(List(list['id'],list['name']))
-
-    return lists
-
 def get_cards():
     """
-    Fetches all Cards from the given Trello Board.
+    Fetches all cards in the db.
 
     Returns:
-        JSON response.
+        List of 'Card' objects.
     """
     cards = []
 
-    for card in (requests.get(f"https://api.trello.com/1/boards/{os.environ.get('BOARD_ID')}/cards",params=get_auth_params())).json():
-        cards.append(Card(card['id'],card['name'],card['idList'],card['desc'],card['due'],card['dateLastActivity']))
+    for card in connect_db().cards.find({}):
+        cards.append(Card(card['_id'],card['name'],card['idList'],card['desc'],card['due'],card['dateLastActivity']))
 
     return cards
 
-def create_card(name,list_id):
+def create_card(desc,list_id,name,due):
     """
-    Creates a card with the given name and Trello List.
+    Creates a card with the given name, list_id & due.
 
     Returns:
         JSON response.
     """
-    post = requests.post(f"https://api.trello.com/1/cards?name={name}&idList={list_id}",params=get_auth_params())
-    
-    response_json = post.json()
-
-    return response_json
+    test = connect_db()
+    card = {"dateLastActivity": datetime.utcnow(),"desc": desc,"idList": ObjectId(list_id),"name": name,"due": datetime.strptime(due,'%d/%m/%Y')}
+    return test.cards.insert_one(card)
 
 def move_card(card_id,list_id):
     """
-    Moves an item to the given Trello List.
+    Moves the card with the given card_id to the list with the given list_id.
 
     Returns:
         JSON response.
     """
-    put = requests.put(f"https://api.trello.com/1/cards/{card_id}?idList={list_id}",params=get_auth_params())
-    
-    response_json = put.json()
-
-    return response_json
+    return connect_db().cards.update_one({"_id": ObjectId(card_id)},{ "$set": {"idList" : ObjectId(list_id)}})
 
 def remove_card(card_id):
     """
-    Moves an item to the given Trello List.
+    Removes a card with the given card_id.
 
     Returns:
         JSON response.
     """
-    post = requests.delete(f"https://api.trello.com/1/cards/{card_id}",params=get_auth_params())
-    
-    response_json = post.json()
-
-    return response_json
-
+    return connect_db().cards.delete_one({"_id": ObjectId(card_id)})
 
 def create_board(name):
     """
-    Creates a Trello Board.
-
-    Returns:
-        JSON response.
+    Creates a database.
     """
-    post = requests.post(f"https://api.trello.com/1/boards/?name={name}",params=get_auth_params())
-    
-    response_json = post.json()
+    connection = get_connection()
+    client = pymongo.MongoClient(connection)
+    db = client[name]
 
-    return response_json
+    return db
 
-def delete_board(board_id):
+def delete_board(name):
     """
-    Deletes a Trello Board.
-
-    Returns:
-        JSON response.
+    Deletes a database.
     """
-    put = requests.delete(f"https://api.trello.com/1/boards/{board_id}",params=get_auth_params())
-    
-    response_json = put.json()
-
-    return response_json
+    connection = get_connection()
+    client = pymongo.MongoClient(connection)
+    client.drop_database(name)

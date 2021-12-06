@@ -7,7 +7,7 @@ class Test_Items_ToDo:
     def test_to_do_items():
 
         # Arrange
-        to_do_item = Card('123', 'To Do', '987', '', '', datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
+        to_do_item = Card('123', 'To Do', '987', '', '', datetime.utcnow())
         to_do_list = List('987', 'To Do')
 
         # Act
@@ -23,7 +23,7 @@ class Test_Items_Doing:
     def test_doing_items():
 
         # Arrange
-        doing_item = Card('234', 'Doing', '876', '', '', datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
+        doing_item = Card('234', 'Doing', '876', '', '', datetime.utcnow())
         doing_list = List('876', 'Doing')
 
         # Act
@@ -39,7 +39,7 @@ class Test_Items_Done:
     def test_done_items():
 
         # Arrange
-        done_item = Card('345', 'Done', '765', '', '', datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
+        done_item = Card('345', 'Done', '765', '', '', datetime.utcnow())
 
         # Act
         view_model = ViewModel([done_item],[])
@@ -67,11 +67,11 @@ class Test_Show_All_Done_Items:
     def test_show_all_done_items():
 
         # Arrange
-        done_item_today1 = Card('345', 'Done', '765', '', '', datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
-        done_item_today2 = Card('345', 'Done', '765', '', '', datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
-        done_item_old1 = Card('345', 'Done', '765', '', '', (datetime.utcnow()- timedelta(days=2)).strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
-        done_item_old2 = Card('345', 'Done', '765', '', '', (datetime.utcnow()- timedelta(days=2)).strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
-        done_item_old3 = Card('345', 'Done', '765', '', '', (datetime.utcnow()- timedelta(days=2)).strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
+        done_item_today1 = Card('345', 'Done', '765', '', '', datetime.utcnow())
+        done_item_today2 = Card('345', 'Done', '765', '', '', datetime.utcnow())
+        done_item_old1 = Card('345', 'Done', '765', '', '', (datetime.utcnow()- timedelta(days=2)))
+        done_item_old2 = Card('345', 'Done', '765', '', '', (datetime.utcnow()- timedelta(days=2)))
+        done_item_old3 = Card('345', 'Done', '765', '', '', (datetime.utcnow()- timedelta(days=2)))
         done_list = List('765', 'Done')
 
         # Act
@@ -94,7 +94,7 @@ class Test_Recent_Done_Items:
     def test_recent_done_items():
 
         # Arrange
-        done_item_old = Card('345', 'Done', '765', '', '', (datetime.utcnow()- timedelta(days=2)).strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
+        done_item_old = Card('345', 'Done', '765', '', '', (datetime.utcnow()- timedelta(days=2)))
         done_list = List('765', 'Done')
 
         # Act
@@ -111,7 +111,7 @@ class Test_Older_Done_Items:
     def test_older_done_items():
 
         # Arrange
-        done_item_today = Card('345', 'Done', '765', '', '', datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
+        done_item_today = Card('345', 'Done', '765', '', '', datetime.utcnow())
         done_list = List('765', 'Done')
 
         # Act
@@ -128,13 +128,13 @@ class Test_All:
     def test_all():
 
         # Arrange
-        to_do_item = Card('123', 'to_do', '987', '', '', datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
-        doing_item = Card('234', 'doing', '876', '', '', datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
-        done_item_today1 = Card('345', 'Done', '765', '', '', datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
-        done_item_today2 = Card('345', 'Done', '765', '', '', datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
-        done_item_old1 = Card('345', 'Done', '765', '', '', (datetime.utcnow()- timedelta(days=2)).strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
-        done_item_old2 = Card('345', 'Done', '765', '', '', (datetime.utcnow()- timedelta(days=2)).strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
-        done_item_old3 = Card('345', 'Done', '765', '', '', (datetime.utcnow()- timedelta(days=2)).strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
+        to_do_item = Card('123', 'to_do', '987', '', '', datetime.utcnow())
+        doing_item = Card('234', 'doing', '876', '', '', datetime.utcnow())
+        done_item_today1 = Card('345', 'Done', '765', '', '', datetime.utcnow())
+        done_item_today2 = Card('345', 'Done', '765', '', '', datetime.utcnow())
+        done_item_old1 = Card('345', 'Done', '765', '', '', (datetime.utcnow()- timedelta(days=2)))
+        done_item_old2 = Card('345', 'Done', '765', '', '', (datetime.utcnow()- timedelta(days=2)))
+        done_item_old3 = Card('345', 'Done', '765', '', '', (datetime.utcnow()- timedelta(days=2)))
         to_do_list = List('987', 'To Do')
         doing_list = List('876', 'Doing')
         done_list = List('765', 'Done')

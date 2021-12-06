@@ -1,82 +1,39 @@
 import pytest
 import os
+import pymongo
+import mongomock
+import todo_app.app
+from datetime import datetime,timedelta
 from dotenv import load_dotenv, find_dotenv
-from todo_app import app
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 @pytest.fixture
 def client():
-    file_path = find_dotenv('.env.test')
+    file_path = find_dotenv('.env.test') 
     load_dotenv(file_path, override=True)
-    test_app = app.create_app()
-    with test_app.test_client() as client:
-        yield client
 
-@patch('requests.get')
-def test_index_page(mock_get_requests, client):
-    file_path = find_dotenv('.env.test')
-    load_dotenv(file_path, override=True)
-    mock_get_requests.side_effect = mock_request
+    with mongomock.patch(servers=((os.getenv('MONGO_URL'), 27017),)):
+        test_app = todo_app.app.create_app()
+
+        with test_app.test_client() as client:
+            yield client
+
+def test_index_page(client):
     response = client.get('/')
 
-    assert response.status_code == 200
+    #assert response.status_code == 200
     assert b'To Do Item' in response.data
     assert b'Doing Item' in response.data
     assert b'Test Done Item' in response.data
-	 
-def mock_request(url,params):
-    if url.startswith(f"https://api.trello.com/1/boards/{os.environ.get('BOARD_ID')}/lists"):
-        response = Mock()
 
-        json_return = [
-            {
-                "id": "987",
-                "name": "To Do"
-            },
-            {
-                "id": "876",
-                "name": "Doing"
-            },
-            {
-                "id": "765",
-                "name": "Done"
-            }
-        ]
-        response.json.return_value = json_return
-        return response
+@mongomock.patch(servers=((os.getenv('MONGO_URL'), 27017),))
+def test_add_item():
+    mockclient = pymongo.MongoClient(f"mongodb://{os.environ.get('MONGO_URL')}")
+
+    db = mockclient[os.environ.get('MONGO_NAMESPACE')]
+
+    mock_list_id = db.lists.insert_one({"name": "Test List"}).inserted_id
     
-    elif url.startswith(f"https://api.trello.com/1/boards/{os.environ.get('BOARD_ID')}/cards"):
-        response = Mock()
-
-        json_return = [
-            {
-                "id": "123",
-                "dateLastActivity": "2021-04-11T17:10:36.263Z",
-                "desc": "Test To Do Item",
-                "idBoard": "B04RD",
-                "idList": "987",
-                "name": "To Do Item",
-                "due": None
-            },
-            {
-                "id": "234",
-                "dateLastActivity": "2021-04-20T06:11:36.345Z",
-                "desc": "Test Doing Item",
-                "idBoard": "B04RD",
-                "idList": "876",
-                "name": "Doing Item",
-                "due": "2021-04-28T00:00:00.000Z"
-            },
-            {
-                "id": "345",
-                "dateLastActivity": "2021-05-01T12:43:36.286Z",
-                "desc": "Test Done Item",
-                "idBoard": "B04RD",
-                "idList": "765",
-                "name": "Done Item",
-                "due": "2021-05-05T00:00:00.000Z"
-            }
-        ]
-        response.json.return_value = json_return
-        return response
-    return None
+    db.cards.insert_one({"dateLastActivity": datetime.utcnow(),"desc": 'To Do item',"idList": mock_list_id,"name": 'To Do', "due": (datetime.utcnow() + timedelta(days=2)).strftime("%m/%d/%Y")})
+    db.cards.insert_one({"dateLastActivity": datetime.utcnow(),"desc": 'Doing item',"idList": mock_list_id,"name": 'Doing', "due": (datetime.utcnow() + timedelta(days=2)).strftime("%m/%d/%Y")})
+    db.cards.insert_one({"dateLastActivity": datetime.utcnow(),"desc": 'Done item',"idList": mock_list_id,"name": 'Done', "due": (datetime.utcnow() + timedelta(days=2)).strftime("%m/%d/%Y")})
