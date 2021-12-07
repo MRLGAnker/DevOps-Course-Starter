@@ -35,8 +35,8 @@ before_deploy:
 - docker login --username=_ --password=$HEROKU_API_KEY registry.heroku.com
 - docker tag $DOCKER_USERNAME/todo-app:latest registry.heroku.com/ganker-todo-app/web
 - docker push registry.heroku.com/ganker-todo-app/web
-- terraform apply -var prefix=ganker-todo -var OAUTH_CLIENT_ID=OAUTH_CLIENT_ID -var
-  OAUTH_CLIENT_SECRET=OAUTH_CLIENT_SECRET -auto-approve
+- terraform apply -var prefix=ganker-todo -var OAUTH_CLIENT_ID=$OAUTH_CLIENT_ID -var
+  OAUTH_CLIENT_SECRET=$OAUTH_CLIENT_SECRET -auto-approve
 - export WEBHOOK_URL="$(terraform output -raw cd_webhook)"
 deploy:
   provider: script
