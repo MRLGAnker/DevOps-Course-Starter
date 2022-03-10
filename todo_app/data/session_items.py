@@ -167,10 +167,8 @@ def create_board(name):
 
     return db
 
-def delete_board(name):
+def clear_cards():
     """
-    Deletes a database.
+    Removes all cards.
     """
-    connection = get_connection()
-    client = pymongo.MongoClient(connection)
-    client.drop_database(name)
+    connect_db().cards.delete_many({})

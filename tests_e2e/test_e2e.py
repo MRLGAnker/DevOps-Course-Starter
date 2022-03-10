@@ -4,7 +4,7 @@ from threading import Thread
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from todo_app import app
-from todo_app.data.session_items import create_board, delete_board
+from todo_app.data.session_items import create_board, clear_cards
 from dotenv import find_dotenv,load_dotenv
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
@@ -19,6 +19,7 @@ def app_with_temp_board():
 	os.environ['FLASK_ENV'] = "e2e_Test"
 	os.environ['MONGO_DATABASE'] = "e2e_Test_Board"
 	db = create_board(os.environ.get('MONGO_DATABASE'))
+	clear_cards()
 
 	default_lists = [{"name": "To Do"},{"name": "Doing"},{"name": "Done"}]
 	for default_list in default_lists:

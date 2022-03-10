@@ -56,7 +56,10 @@ def create_app():
     def test():
         if 'LOGIN_DISABLED' in app.config or current_user.role == 'WRITER':
             create_card(request.form.get("card_desc"),request.form.get('submit_button'),request.form.get('card_name'),request.form.get('card_due'))
-            app.logger.info(f"New card created by {current_user.id}")
+            if 'LOGIN_DISABLED' not in app.config:
+                app.logger.info(f"New card created by {current_user.id}")
+            else:
+                app.logger.info(f"New card created whilst logins disabled")
             return redirect('/')
 
 
@@ -65,7 +68,10 @@ def create_app():
     def move(card_id,list_id):
         if 'LOGIN_DISABLED' in app.config or current_user.role == 'WRITER':
             move_card(card_id,list_id)
-            app.logger.info(f"{current_user.id} moved card {card_id} to list {list_id}")
+            if 'LOGIN_DISABLED' not in app.config:
+                app.logger.info(f"{current_user.id} moved card {card_id} to list {list_id}")
+            else:
+                app.logger.info(F"Card {card_id} moved to list {list_id} whilst logins disabled")
             return redirect('/')
 
 
@@ -74,7 +80,10 @@ def create_app():
     def remove(card_id):
         if 'LOGIN_DISABLED' in app.config or current_user.role == 'WRITER':
             remove_card(card_id)
-            app.logger.info(f"{current_user.id} removed card {card_id}")
+            if 'LOGIN_DISABLED' not in app.config:
+                app.logger.info(f"{current_user.id} removed card {card_id}")
+            else:
+                app.logger.info(F"Card {card_id} removed whilst logins disabled")
             return redirect('/')
 
     @app.route('/login/callback', methods=['GET', 'POST'])
