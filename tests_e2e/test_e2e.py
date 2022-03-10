@@ -33,7 +33,6 @@ def app_with_temp_board():
 	yield test_app
 	
 	thread.join(1)
-	#delete_board("e2e_Test_Board")
 
 @pytest.fixture(scope="module")
 def driver():
