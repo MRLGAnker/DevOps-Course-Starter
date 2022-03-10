@@ -64,7 +64,7 @@ class ViewModel:
         return len(self.done_items) < 5
 
 def get_connection():
-    connection_string = f"mongodb+srv://{os.environ.get('MONGO_USERNAME')}:{os.environ.get('MONGO_PASSWORD')}@{os.environ.get('MONGO_URL')}"
+    connection_string = f"{os.environ.get('MONGO_PROTOCOL')}://{os.environ.get('MONGO_USERNAME')}:{os.environ.get('MONGO_PASSWORD')}@{os.environ.get('MONGO_URL')}/DefaultDatabase?ssl=true&retryWrites=false"
     return connection_string
 
 def get_database():
@@ -167,10 +167,8 @@ def create_board(name):
 
     return db
 
-def delete_board(name):
+def clear_cards():
     """
-    Deletes a database.
+    Removes all cards.
     """
-    connection = get_connection()
-    client = pymongo.MongoClient(connection)
-    client.drop_database(name)
+    connect_db().cards.delete_many({})
