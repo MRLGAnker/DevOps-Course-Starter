@@ -1,0 +1,58 @@
+# deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: module-14
+spec:
+  selector:
+    matchLabels:
+      app: module-14
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: module-14
+    spec:
+      containers:
+      - name: todo-app
+        image: docker.io/library/todo-app:prod
+        ports:
+        - containerPort: 80
+        imagePullPolicy: Never
+        env:
+        - name: MONGO_USERNAME
+          valueFrom: 
+            secretKeyRef: 
+              name: module-14
+              key: MONGO_USERNAME
+        - name: MONGO_PASSWORD
+          valueFrom: 
+            secretKeyRef: 
+              name: module-14
+              key: MONGO_PASSWORD
+        - name: MONGO_URL
+          valueFrom: 
+            secretKeyRef: 
+              name: module-14
+              key: MONGO_URL
+        - name: MONGO_PROTOCOL
+          value: "mongodb"
+        - name: MONGO_DATABASE
+          value: "ToDo"
+        - name: OAUTH_CLIENT_ID
+          valueFrom: 
+            secretKeyRef: 
+              name: module-14
+              key: OAUTH_CLIENT_ID
+        - name: OAUTH_CLIENT_SECRET
+          valueFrom: 
+            secretKeyRef: 
+              name: module-14
+              key: OAUTH_CLIENT_SECRET
+        - name: LOGGLY_TOKEN
+          valueFrom: 
+            secretKeyRef: 
+              name: module-14
+              key: LOGGLY_TOKEN
+        - name: LOG_LEVEL
+          value: "INFO"
