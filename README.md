@@ -45,6 +45,10 @@ Add the following to the .env file:
 OAUTH_CLIENT_ID=<OAuth Client ID>
 OAUTH_CLIENT_SECRET=<OAuth Client Secret>
 
+## Add Logging details to .env file
+LOG_LEVEL=<Log Level>
+LOGGLY_TOKEN=<Loggy Token>
+
 ## Running the App
 
 Once the all dependencies have been installed, start the Flask app in development mode within the poetry environment by running:

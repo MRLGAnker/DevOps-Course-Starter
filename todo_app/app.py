@@ -1,11 +1,15 @@
 import os
-import requests
 from flask import Flask, render_template, request, redirect
-from datetime import datetime
-from todo_app.data.session_items import check_default_lists, create_card, get_lists, get_cards, move_card, remove_card, ViewModel
-from todo_app.user import TestUser,User,Anonymous
-from flask_login import LoginManager, login_required, UserMixin, login_user, current_user
+import requests
+from flask_login import LoginManager, login_required, login_user, current_user
 from oauthlib.oauth2 import WebApplicationClient
+from loggly.handlers import HTTPSHandler
+from logging import Formatter
+from todo_app.data.session_items import (
+    check_default_lists, create_card, get_lists, get_cards,move_card,
+    remove_card, ViewModel
+)
+from todo_app.user import TestUser,User,Anonymous
 
 login_manager = LoginManager()
 
@@ -30,6 +34,15 @@ def create_app():
     else:
         login_manager.anonymous_user = Anonymous
 
+    app.config['LOG_LEVEL'] = os.getenv('LOG_LEVEL')
+    app.config['LOGGLY_TOKEN'] = os.getenv('LOGGLY_TOKEN')
+    app.logger.setLevel(app.config['LOG_LEVEL'])
+
+    if app.config['LOGGLY_TOKEN'] is not None:
+        handler = HTTPSHandler(f'https://logs-01.loggly.com/inputs/{app.config["LOGGLY_TOKEN"]}/tag/todo-app')
+        handler.setFormatter(Formatter("[%(asctime)s] %(levelname)s in %(module)s: %(message)s"))
+        app.logger.addHandler(handler)
+
     check_default_lists()
 
     @app.route('/')
@@ -44,6 +57,7 @@ def create_app():
     def test():
         if 'LOGIN_DISABLED' in app.config or current_user.role == 'WRITER':
             create_card(request.form.get("card_desc"),request.form.get('submit_button'),request.form.get('card_name'),request.form.get('card_due'))
+            app.logger.info(f"New card created by {current_user.id}")
             return redirect('/')
 
 
@@ -52,6 +66,7 @@ def create_app():
     def move(card_id,list_id):
         if 'LOGIN_DISABLED' in app.config or current_user.role == 'WRITER':
             move_card(card_id,list_id)
+            app.logger.info(f"{current_user.id} moved card {card_id} to list {list_id}")
             return redirect('/')
 
 
@@ -60,6 +75,7 @@ def create_app():
     def remove(card_id):
         if 'LOGIN_DISABLED' in app.config or current_user.role == 'WRITER':
             remove_card(card_id)
+            app.logger.info(f"{current_user.id} removed card {card_id}")
             return redirect('/')
 
     @app.route('/login/callback', methods=['GET', 'POST'])
@@ -73,6 +89,7 @@ def create_app():
         user_id = requests.get(user[0], headers=user[1]).json()['login']
         
         login_user(User(user_id))
+        app.logger.info(f"User {current_user.id} logged in")
 
         return redirect('/')
 
